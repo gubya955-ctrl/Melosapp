@@ -652,14 +652,24 @@ box-shadow:0 4px 20px rgba(52,199,89,0.2);
 // ─── Safe-area をJSで正確に取得 ───
 (function(){
   const r = document.documentElement;
-  // CSS環境変数から直接取得
-  const style = getComputedStyle(r);
-  const safeTop = parseInt(style.getPropertyValue('--safe-top')) || 0;
-  // iOSのSafariブラウザモード（アドレスバーあり）では
-  // safe-area-inset-topがステータスバーのみの高さになる
-  // iPhone標準は44px、ノッチなしは20px
-  r.style.setProperty('--safe-top', `env(safe-area-inset-top, 44px)`);
-  r.style.setProperty('--safe-bot', `env(safe-area-inset-bottom, 0px)`);
+  // black-translucentモードではenv(safe-area-inset-top)がステータスバーの高さと一致する
+  r.style.setProperty('--safe-top', 'env(safe-area-inset-top, 50px)');
+  r.style.setProperty('--safe-bot', 'env(safe-area-inset-bottom, 0px)');
+  // ステータスバーの高さをpxで取得してバナーに適用
+  const div = document.createElement('div');
+  div.style.cssText = 'position:fixed;top:0;left:0;width:0;height:env(safe-area-inset-top,50px);visibility:hidden;';
+  document.body.appendChild(div);
+  requestAnimationFrame(()=>{
+    const h = div.getBoundingClientRect().height || 50;
+    document.body.removeChild(div);
+    r.style.setProperty('--safe-top', h + 'px');
+    // バナー・status-stripの高さも更新
+    document.querySelectorAll('.site-banner,.status-strip,.perm-screen::before').forEach(el=>{
+      el.style.height = h + 'px';
+    });
+    document.getElementById('statusStrip').style.height = h + 'px';
+    document.querySelector('.navbar').style.marginTop = h + 'px';
+  });
 })();
 
 // ─── IndexedDB ───

@@ -9,7 +9,6 @@
 <meta name="theme-color" content="#34c759">
 <title>Melos</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@300;400;500&family=Manrope:wght@300;400;600;700&display=swap');
 :root {
   --g:       #34c759;
   --g2:      #2aad4a;
@@ -25,9 +24,9 @@
   --txt2:    rgba(240,244,240,0.5);
   --txt3:    rgba(240,244,240,0.25);
   --red:     #ff3b30;
-  --serif:   'Instrument Serif', Georgia, serif;
-  --mono:    'DM Mono', monospace;
-  --sans:    'Manrope', sans-serif;
+  --serif:   'Georgia', 'Times New Roman', serif;
+  --mono:    'Courier New', 'Menlo', monospace;
+  --sans:    '-apple-system', 'BlinkMacSystemFont', 'Helvetica Neue', sans-serif;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bot: env(safe-area-inset-bottom, 0px);
 }
@@ -50,7 +49,6 @@ background:linear-gradient(160deg,#0a180c 0%,#0d0d0d 60%,#050d06 100%);
 display:flex;flex-direction:column;align-items:center;justify-content:center;
 padding:40px 28px;padding-top:max(var(–safe-top),40px);gap:0;
 }
-/* パーミッション画面の上部にも同じ緑バナー */
 .perm-screen::before{
 content:’’;
 position:absolute;top:0;left:0;right:0;
@@ -203,10 +201,10 @@ content:’’;position:absolute;inset:-8px;border-radius:50%;
 border:1.5px solid rgba(52,199,89,0.2);transition:all .3s;
 }
 .btn-play.recording{
-background:radial-gradient(circle at 35% 35%,#ff6259,var(–red));
-box-shadow:0 0 0 8px rgba(255,59,48,0.1),0 8px 24px rgba(0,0,0,0.35);
+background:radial-gradient(circle at 35% 35%,#5ddd7a,var(–g2));
+box-shadow:0 0 0 8px rgba(52,199,89,0.15),0 8px 24px rgba(0,0,0,0.35);
 }
-.btn-play.recording::after{border-color:rgba(255,59,48,0.3);animation:ring-pulse 1.6s ease-in-out infinite}
+.btn-play.recording::after{border-color:rgba(52,199,89,0.4);animation:ring-pulse 1.6s ease-in-out infinite}
 @keyframes ring-pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.2);opacity:0.3}}
 .btn-play:active{transform:scale(0.93)}
 
@@ -607,7 +605,11 @@ box-shadow:0 4px 20px rgba(52,199,89,0.2);
     </button>
   </div>
   <div class="preview-video-wrap">
-    <video class="preview-video" id="previewVideo" controls playsinline></video>
+    <video class="preview-video" id="previewVideo" controls playsinline webkit-playsinline></video>
+  </div>
+  <!-- iOS向け保存案内 -->
+  <div id="iosSaveHint" style="display:none;font-size:12px;color:rgba(240,244,240,0.5);text-align:center;padding:10px 0;font-family:monospace;letter-spacing:0.05em;">
+    動画を長押し → 「ビデオを保存」
   </div>
   <div class="preview-actions">
     <button class="preview-btn close-btn" id="btnPreviewCancel">Close</button>
@@ -647,18 +649,17 @@ box-shadow:0 4px 20px rgba(52,199,89,0.2);
    ─ Save choice modal after every recording
 ═══════════════════════════════════════════════ */
 
-// ─── Safe-area をJSで正確に取得してCSS変数に反映 ───
+// ─── Safe-area をJSで正確に取得 ───
 (function(){
-  // iOSのsafe-area-inset-topをpx値で取得
-  const el = document.createElement('div');
-  el.style.cssText = 'position:fixed;top:env(safe-area-inset-top,0px);left:0;width:1px;height:1px;pointer-events:none;';
-  document.documentElement.appendChild(el);
-  const safeTop = el.getBoundingClientRect().top;
-  document.documentElement.removeChild(el);
-  const h = Math.max(safeTop, 0);
-  document.documentElement.style.setProperty('--safe-top', h + 'px');
-  document.documentElement.style.setProperty('--safe-bot',
-    'env(safe-area-inset-bottom, 0px)');
+  const r = document.documentElement;
+  // CSS環境変数から直接取得
+  const style = getComputedStyle(r);
+  const safeTop = parseInt(style.getPropertyValue('--safe-top')) || 0;
+  // iOSのSafariブラウザモード（アドレスバーあり）では
+  // safe-area-inset-topがステータスバーのみの高さになる
+  // iPhone標準は44px、ノッチなしは20px
+  r.style.setProperty('--safe-top', `env(safe-area-inset-top, 44px)`);
+  r.style.setProperty('--safe-bot', `env(safe-area-inset-bottom, 0px)`);
 })();
 
 // ─── IndexedDB ───
@@ -855,12 +856,11 @@ async function startRecording(){
   document.getElementById('btnPlay').classList.add('recording');
   document.getElementById('playIcon').innerHTML='<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
 
-  // Album badge → subtle indicator
-  document.getElementById('albumBadge').style.background='rgba(255,59,48,0.2)';
-  document.getElementById('albumBadge').style.borderColor='rgba(255,59,48,0.4)';
-  document.getElementById('badgeDot').style.background='#ff3b30';
-  document.getElementById('badgeDot').style.boxShadow='0 0 6px #ff3b30';
-  // テキストは変えない（偽装維持）
+  // Album badge → green indicator
+  document.getElementById('albumBadge').style.background='rgba(52,199,89,0.2)';
+  document.getElementById('albumBadge').style.borderColor='rgba(52,199,89,0.5)';
+  document.getElementById('badgeDot').style.background='var(--g)';
+  document.getElementById('badgeDot').style.boxShadow='0 0 6px var(--g)';
 
   // Red dot on gallery button
   document.getElementById('recBadge').classList.add('show');
@@ -1023,7 +1023,9 @@ document.getElementById('btnPreviewDl').addEventListener('click',()=>{
   if(!previewCurrentRec) return;
   const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
   if(isIOS){
-    showToast('動画を長押し→「ビデオを保存」');
+    // iOS: ヒントを表示して動画を長押し保存してもらう
+    document.getElementById('iosSaveHint').style.display='block';
+    showToast('動画を長押し → ビデオを保存');
   } else {
     dlVideo(previewCurrentRec);
   }
@@ -1031,7 +1033,8 @@ document.getElementById('btnPreviewDl').addEventListener('click',()=>{
 
 // iOSの場合、プレビューボタンのラベルを変える
 if(/iPad|iPhone|iPod/.test(navigator.userAgent)){
-  document.getElementById('btnPreviewDl').textContent='長押しで保存';
+  document.getElementById('btnPreviewDl').textContent='💾 保存方法を見る';
+  document.getElementById('iosSaveHint').style.display='block';
 }
 
 // ─── Queue ───

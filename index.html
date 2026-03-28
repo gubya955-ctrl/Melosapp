@@ -234,6 +234,38 @@ display:flex;align-items:flex-start;padding-top:8px;
 justify-content:space-around;z-index:10;
 background:rgba(13,13,13,0.94);backdrop-filter:blur(20px);
 }
+
+/* ── REC indicator bar (above bottom nav) ── */
+.rec-indicator{
+position:fixed;
+bottom:calc(60px + var(–safe-bot));
+left:0;right:0;
+z-index:11;
+height:0;
+overflow:hidden;
+transition:height .3s ease;
+}
+.rec-indicator.show{height:36px;}
+.rec-indicator-inner{
+display:flex;align-items:center;justify-content:center;gap:10px;
+height:36px;
+background:rgba(255,59,48,0.12);
+border-top:1px solid rgba(255,59,48,0.25);
+}
+.rec-dot-blink{
+width:7px;height:7px;border-radius:50%;
+background:var(–red);
+box-shadow:0 0 8px var(–red);
+animation:blink .9s ease-in-out infinite;
+}
+.rec-label{
+font-family:var(–mono);font-size:11px;
+color:var(–red);letter-spacing:0.2em;
+}
+.rec-timer-label{
+font-family:var(–mono);font-size:11px;
+color:rgba(255,59,48,0.7);letter-spacing:0.05em;
+}
 .bnav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px 18px;cursor:pointer;transition:all .2s;color:var(–txt3)}
 .bnav-item.active{color:var(–g)}
 .bnav-item:active{transform:scale(0.91)}
@@ -546,6 +578,16 @@ box-shadow:0 4px 20px rgba(52,199,89,0.2);
 
   </div><!-- /scroll-body -->
 
+  <!-- REC indicator bar -->
+
+  <div class="rec-indicator" id="recIndicator">
+    <div class="rec-indicator-inner">
+      <div class="rec-dot-blink"></div>
+      <div class="rec-label">REC</div>
+      <div class="rec-timer-label" id="recTimerLabel">0:00</div>
+    </div>
+  </div>
+
   <!-- Bottom Nav -->
 
   <div class="bottom-nav">
@@ -789,8 +831,12 @@ function loadSong(i){
 async function getStream(facing){
   if(stream){stream.getTracks().forEach(t=>t.stop()); stream=null;}
   try{
+    // 前面カメラはポートレート(縦)で取得して引き伸ばしを防ぐ
+    const videoConstraints = facing==='user'
+      ? {facingMode:'user', width:{ideal:720}, height:{ideal:1280}}
+      : {facingMode:'environment', width:{ideal:1280}, height:{ideal:720}};
     stream=await navigator.mediaDevices.getUserMedia({
-      video:{width:{ideal:1280},height:{ideal:720},facingMode:facing},
+      video: videoConstraints,
       audio:true
     });
     document.getElementById('hiddenCam').srcObject=stream;
@@ -842,6 +888,8 @@ async function startRecording(){
 
   // Red dot on gallery button
   document.getElementById('recBadge').classList.add('show');
+  // REC indicator bar
+  document.getElementById('recIndicator').classList.add('show');
 
   // Timer on progress
   timerInt=setInterval(()=>{

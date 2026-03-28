@@ -47,13 +47,16 @@ pointer-events:none;
 position:fixed;inset:0;z-index:200;
 background:linear-gradient(160deg,#0a180c 0%,#0d0d0d 60%,#050d06 100%);
 display:flex;flex-direction:column;align-items:center;justify-content:center;
-padding:40px 28px;padding-top:max(var(–safe-top),40px);gap:0;
+padding:40px 28px;
+padding-top:max(env(safe-area-inset-top,50px),40px);
+gap:0;
 }
 .perm-screen::before{
 content:’’;
-position:absolute;top:0;left:0;right:0;
-height:var(–safe-top);
+position:fixed;top:0;left:0;right:0;
+height:env(safe-area-inset-top,50px);
 background:#34c759;
+z-index:201;
 }
 .perm-screen.gone{display:none}
 .perm-wordmark{font-family:var(–serif);font-size:52px;color:var(–g);letter-spacing:-0.01em;line-height:1;margin-bottom:6px}
@@ -74,15 +77,16 @@ background:#34c759;
 position:fixed;inset:0;display:flex;flex-direction:column;
 background:var(–bg);
 opacity:0;pointer-events:none;transition:opacity .5s;
+padding-top:env(safe-area-inset-top, 50px);
 }
 .app.visible{opacity:1;pointer-events:all}
 
 /* ── status strip (ALWAYS #34c759 green) ── */
 .status-strip{
-position:absolute;top:0;left:0;right:0;
-height:var(–safe-top);
+position:fixed;top:0;left:0;right:0;
+height:env(safe-area-inset-top, 50px);
 background:#34c759;
-display:flex;align-items:flex-end;padding:0 14px 5px;gap:8px;z-index:10;
+display:flex;align-items:flex-end;padding:0 14px 5px;gap:8px;z-index:100;
 }
 .strip-dot{width:5px;height:5px;border-radius:50%;background:#054d18;opacity:0.6}
 .strip-dot.pulse{opacity:1;animation:blink .9s ease-in-out infinite}
@@ -91,7 +95,7 @@ display:flex;align-items:flex-end;padding:0 14px 5px;gap:8px;z-index:10;
 
 /* ── Navbar ── */
 .navbar{
-margin-top:var(–safe-top);height:56px;
+height:56px;
 display:flex;align-items:center;justify-content:space-between;
 padding:0 20px;
 background:linear-gradient(to bottom,rgba(52,199,89,0.15) 0%,transparent 100%);
@@ -649,27 +653,11 @@ box-shadow:0 4px 20px rgba(52,199,89,0.2);
    ─ Save choice modal after every recording
 ═══════════════════════════════════════════════ */
 
-// ─── Safe-area をJSで正確に取得 ───
+// ─── Safe-area 取得 ───
 (function(){
   const r = document.documentElement;
-  // black-translucentモードではenv(safe-area-inset-top)がステータスバーの高さと一致する
   r.style.setProperty('--safe-top', 'env(safe-area-inset-top, 50px)');
   r.style.setProperty('--safe-bot', 'env(safe-area-inset-bottom, 0px)');
-  // ステータスバーの高さをpxで取得してバナーに適用
-  const div = document.createElement('div');
-  div.style.cssText = 'position:fixed;top:0;left:0;width:0;height:env(safe-area-inset-top,50px);visibility:hidden;';
-  document.body.appendChild(div);
-  requestAnimationFrame(()=>{
-    const h = div.getBoundingClientRect().height || 50;
-    document.body.removeChild(div);
-    r.style.setProperty('--safe-top', h + 'px');
-    // バナー・status-stripの高さも更新
-    document.querySelectorAll('.site-banner,.status-strip,.perm-screen::before').forEach(el=>{
-      el.style.height = h + 'px';
-    });
-    document.getElementById('statusStrip').style.height = h + 'px';
-    document.querySelector('.navbar').style.marginTop = h + 'px';
-  });
 })();
 
 // ─── IndexedDB ───

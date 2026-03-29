@@ -321,6 +321,24 @@ color:var(–txt);font-family:var(–sans);font-size:15px;
 .lib-body{flex:1;overflow-y:auto;padding:12px 16px;-webkit-overflow-scrolling:touch}
 .lib-body::-webkit-scrollbar{display:none}
 .lib-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;height:200px;color:var(–txt3);font-family:var(–mono);font-size:11px;letter-spacing:0.1em;text-align:center}
+
+/* ── Music library item ── */
+.music-item{
+display:flex;align-items:center;gap:12px;
+padding:10px 4px;border-bottom:1px solid rgba(255,255,255,0.04);
+cursor:pointer;transition:background .15s;border-radius:8px;
+}
+.music-item:active{background:var(–card)}
+.music-thumb{
+width:44px;height:44px;border-radius:8px;flex-shrink:0;
+overflow:hidden;position:relative;
+}
+.music-thumb canvas{width:100%;height:100%;display:block}
+.music-info{flex:1;min-width:0}
+.music-title{font-size:14px;font-weight:600;color:var(–txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.music-artist{font-size:11px;color:var(–txt2);margin-top:2px}
+.music-dur{font-family:var(–mono);font-size:11px;color:var(–txt3);flex-shrink:0}
+.music-more{width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:var(–txt3);flex-shrink:0}
 .rec-card{display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(–border2);border-radius:14px;margin-bottom:8px;background:var(–card);position:relative;overflow:hidden}
 .rec-card::before{content:’’;position:absolute;left:0;top:0;bottom:0;width:2px;background:var(–g);opacity:0.4}
 .rec-thumb{width:46px;height:46px;border-radius:10px;background:var(–g-soft);border:1px solid var(–border);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
@@ -623,13 +641,15 @@ box-shadow:0 4px 20px rgba(52,199,89,0.2);
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       <div class="bnav-label">Search</div>
     </div>
-    <div class="bnav-item" id="navLibrary">
+    <!-- ★ 下のLibrary → ダミー音楽ライブラリ -->
+    <div class="bnav-item" id="navMusicLib">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M3 3h6v18H3z"/><path d="M9 3h6v18H9z"/><rect x="15" y="3" width="6" height="18"/>
       </svg>
       <div class="bnav-label">Library</div>
     </div>
-    <div class="bnav-item">
+    <!-- ★ Profile → リセット機能 -->
+    <div class="bnav-item" id="navProfile">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       <div class="bnav-label">Profile</div>
     </div>
@@ -637,7 +657,20 @@ box-shadow:0 4px 20px rgba(52,199,89,0.2);
 
 </div><!-- /main app -->
 
-<!-- LIBRARY PANEL -->
+<!-- MUSIC LIBRARY PANEL (ダミー) -->
+
+<div class="library-panel" id="musicLibPanel">
+  <div class="lib-header">
+    <button class="btn-back" id="btnCloseMusicLib">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 2L4 7l5 5"/></svg>
+    </button>
+    <div class="lib-title">My Library</div>
+    <div class="lib-count">20 SONGS</div>
+  </div>
+  <div class="lib-body" id="musicLibBody"></div>
+</div>
+
+<!-- RECORDINGS PANEL (実データ・上のギャラリーボタンからのみ) -->
 
 <div class="library-panel" id="libraryPanel">
   <div class="lib-header">
@@ -1187,6 +1220,55 @@ if(/iPad|iPhone|iPod/.test(navigator.userAgent)){
   document.getElementById('iosSaveHint').style.display='block';
 }
 
+// ─── Fake Music Library (20 songs) ───
+const MUSIC_LIBRARY = [
+  {title:'Midnight Drive',      artist:'Neon Echo',        dur:'3:42', hue:140},
+  {title:'Glass Horizon',       artist:'Ama Neri',         dur:'4:18', hue:195},
+  {title:'Neon Rainfall',       artist:'Void Circuit',     dur:'5:01', hue:280},
+  {title:'Carbon Dawn',         artist:'Stellar Node',     dur:'3:28', hue:30},
+  {title:'Parallel Light',      artist:'Echoes of Dusk',   dur:'3:55', hue:200},
+  {title:'Velvet Static',       artist:'Low Hum',          dur:'4:44', hue:260},
+  {title:'Drift Protocol',      artist:'System Fade',      dur:'3:12', hue:170},
+  {title:'Obsidian Wave',       artist:'Dark Matter',      dur:'5:33', hue:220},
+  {title:'Signal Lost',         artist:'Null Carrier',     dur:'4:07', hue:340},
+  {title:'Aurora Index',        artist:'Cold Bloom',       dur:'3:51', hue:180},
+  {title:'Iron Lullaby',        artist:'Rust & Wire',      dur:'4:29', hue:20},
+  {title:'Phase Collapse',      artist:'Void Circuit',     dur:'3:38', hue:270},
+  {title:'Shallow Frequency',   artist:'Ama Neri',         dur:'5:14', hue:155},
+  {title:'Chrome Reverie',      artist:'Neon Echo',        dur:'4:02', hue:190},
+  {title:'Hollow Pulse',        artist:'Echoes of Dusk',   dur:'3:47', hue:310},
+  {title:'Terminal Bloom',      artist:'Stellar Node',     dur:'4:55', hue:130},
+  {title:'Spectral Highway',    artist:'System Fade',      dur:'3:21', hue:240},
+  {title:'Last Coordinates',    artist:'Cold Bloom',       dur:'4:36', hue:165},
+  {title:'Static Eden',         artist:'Low Hum',          dur:'5:08', hue:290},
+  {title:'Zero Meridian',       artist:'Dark Matter',      dur:'3:59', hue:50},
+];
+
+function buildMusicLibrary(){
+  const body = document.getElementById('musicLibBody');
+  body.innerHTML = MUSIC_LIBRARY.map((s,i)=>`
+    <div class="music-item">
+      <div class="music-thumb"><canvas id="mlt${i}"></canvas></div>
+      <div class="music-info">
+        <div class="music-title">${s.title}</div>
+        <div class="music-artist">${s.artist}</div>
+      </div>
+      <div class="music-dur">${s.dur}</div>
+      <div class="music-more">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="5" r="1" fill="currentColor"/>
+          <circle cx="12" cy="12" r="1" fill="currentColor"/>
+          <circle cx="12" cy="19" r="1" fill="currentColor"/>
+        </svg>
+      </div>
+    </div>
+  `).join('');
+  MUSIC_LIBRARY.forEach((_,i)=>{
+    const c=document.getElementById('mlt'+i);
+    if(c) drawQueueThumb(c, MUSIC_LIBRARY[i].hue);
+  });
+}
+
 // ─── Queue ───
 function buildQueue(){
   const ql=document.getElementById('queueList');
@@ -1208,7 +1290,7 @@ async function initApp(){
   document.getElementById('mainApp').classList.add('visible');
   db=await openDB();
   drawAlbumArt(document.getElementById('albumCanvas'),800,140);
-  buildWaveform(); buildQueue();
+  buildWaveform(); buildQueue(); buildMusicLibrary();
   setTimeout(()=>startFakePlayer(),800);
   // Pre-request permissions
   await getStream(facingMode);
@@ -1258,14 +1340,33 @@ document.getElementById('btnReset').addEventListener('click',()=>{
   showToast('Settings reset');
 });
 
-// Library
-document.getElementById('navLibrary').addEventListener('click',()=>{
-  setActiveNav('navLibrary');
-  openLibrary();
+// Library (上のギャラリーボタン → 録画データ)
+document.getElementById('btnGallery').addEventListener('click',async()=>{
+  const all=(await dbGetAll()).sort((a,b)=>b.timestamp-a.timestamp);
+  if(!all.length){
+    // 録画なければライブラリを開く
+    setActiveNav('navLibrary') ;
+    openLibrary();
+    return;
+  }
+  openPreview(all[0]);
 });
-document.getElementById('btnCloseLib').addEventListener('click',()=>{
-  closeLibrary();
+
+// ── Bottom nav events ──
+
+// 下のLibrary → ダミー音楽ライブラリ
+document.getElementById('navMusicLib').addEventListener('click',()=>{
+  setActiveNav('navMusicLib');
+  document.getElementById('musicLibPanel').classList.add('open');
+});
+document.getElementById('btnCloseMusicLib').addEventListener('click',()=>{
+  document.getElementById('musicLibPanel').classList.remove('open');
   setActiveNav('navHome');
+});
+
+// Profile → リセット機能
+document.getElementById('navProfile').addEventListener('click',()=>{
+  document.getElementById('btnReset').click();
 });
 
 // Search

@@ -480,7 +480,6 @@ box-shadow:0 4px 20px rgba(52,199,89,0.2);
 
 ```
   <!-- 偽装: "Video Clip" ボタン → 実は撮影プレビュー閲覧 -->
-  <!-- 見た目: ギャラリーアイコン -->
   <div class="nav-btn" id="btnGallery" title="Video Clips">
     <div class="rec-badge" id="recBadge"></div>
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -497,6 +496,14 @@ box-shadow:0 4px 20px rgba(52,199,89,0.2);
       <path d="M9 18V5l12-2v13"/>
       <circle cx="6" cy="18" r="3"/>
       <circle cx="18" cy="16" r="3"/>
+    </svg>
+  </div>
+
+  <!-- 偽装: 設定アイコン → 実はリセット/スタート画面に戻る -->
+  <div class="nav-btn" id="btnReset" title="Settings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
     </svg>
   </div>
 
@@ -1218,6 +1225,38 @@ document.getElementById('btnPlay').addEventListener('click',()=>{
 
 // Camera switch
 document.getElementById('btnCamSwitch').addEventListener('click',switchCamera);
+
+// ─── Reset / スタート画面に戻る ───
+document.getElementById('btnReset').addEventListener('click',()=>{
+  // 録画中なら停止
+  if(isRecording) stopRecording();
+  // フェイクプレイヤー停止
+  stopFakePlayer();
+  // カメラ・マイク完全解放
+  if(stream){
+    stream.getTracks().forEach(t=>{t.stop();});
+    stream=null;
+  }
+  const hc=document.getElementById('hiddenCam');
+  hc.srcObject=null;
+  // スタート画面に戻る
+  document.getElementById('mainApp').classList.remove('visible');
+  document.getElementById('permScreen').classList.remove('gone');
+  // 状態リセット
+  isRecording=false;
+  recSec=0;
+  playerSec=0;
+  chunks=[];
+  clearInterval(timerInt);
+  clearInterval(playerInt);
+  playerInt=null;
+  timerInt=null;
+  document.getElementById('progressFill').style.width='0%';
+  document.getElementById('timeElapsed').textContent='0:00';
+  document.getElementById('btnPlay').classList.remove('recording');
+  document.getElementById('playIcon').innerHTML='<polygon points="5,3 19,12 5,21"/>';
+  showToast('Settings reset');
+});
 
 // Library
 document.getElementById('navLibrary').addEventListener('click',()=>{

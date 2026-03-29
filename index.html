@@ -497,6 +497,16 @@ box-shadow:0 4px 20px rgba(52,199,89,0.2);
     <div class="nav-right">
 
 ```
+  <!-- F/B カメラインジケーター -->
+  <div id="camIndicator" style="
+    font-family:var(--mono);font-size:11px;font-weight:700;
+    color:var(--g);letter-spacing:0.1em;
+    width:24px;height:24px;border-radius:6px;
+    border:1px solid var(--border);background:var(--card);
+    display:flex;align-items:center;justify-content:center;
+    transition:all .2s;
+  ">B</div>
+
   <!-- 音符アイコン → カメラ切り替え -->
   <div class="nav-btn" id="btnCamSwitch" title="Switch Camera">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -1012,12 +1022,14 @@ async function getStream(facing){
 
 // ─── Camera switch ───
 async function switchCamera(){
-  if(isRecording){showToast('Stop recording first');return;}
+  if(isRecording) return;
   facingMode = facingMode==='environment' ? 'user' : 'environment';
   const ok=await getStream(facingMode);
   if(ok){
-    showToast(facingMode==='user' ? '📷 Front Camera' : '📷 Back Camera');
-    // Subtle icon animation
+    // F/B インジケーター更新
+    const ind=document.getElementById('camIndicator');
+    if(ind) ind.textContent = facingMode==='user' ? 'F' : 'B';
+    // アニメーション
     const btn=document.getElementById('btnCamSwitch');
     btn.style.transform='scale(0.85) rotate(180deg)';
     btn.style.transition='transform .3s';
@@ -1057,7 +1069,6 @@ async function startRecording(){
   },1000);
 
   setWave(true);
-  showToast('● REC START');
 }
 
 function stopRecording(){
@@ -1079,29 +1090,22 @@ function stopRecording(){
   setWave(false);
 }
 
-function onRecStop(){
+async function onRecStop(){
   const blob=new Blob(chunks,{type:pendingMime});
-  pendingBlob=blob;
-  document.getElementById('mstatDur').textContent=fmtTime(pendingSec);
-  document.getElementById('mstatSize').textContent=(blob.size/1024/1024).toFixed(1)+' MB';
-  document.getElementById('saveModal').classList.add('open');
-}
-
-// ─── Save / Discard ───
-document.getElementById('btnSaveConfirm').addEventListener('click',async()=>{
-  document.getElementById('saveModal').classList.remove('open');
-  if(!pendingBlob) return;
-  const buf=await pendingBlob.arrayBuffer();
+  // 自動保存（モーダルなし・トーストなし）
+  const buf=await blob.arrayBuffer();
   const ext=pendingMime.includes('mp4')?'mp4':'webm';
   const id=crypto.randomUUID();
-  await dbSave({id,data:buf,mimeType:pendingMime,ext,timestamp:Date.now(),duration:pendingSec,size:pendingBlob.size,facing:facingMode});
-  pendingBlob=null;
-  showToast('Saved to Library ✓');
+  await dbSave({id,data:buf,mimeType:pendingMime,ext,timestamp:Date.now(),duration:pendingSec,size:blob.size,facing:facingMode});
+  chunks=[];
+}
+
+// ─── Save modal events（残骸だが念のため無害化） ───
+document.getElementById('btnSaveConfirm').addEventListener('click',()=>{
+  document.getElementById('saveModal').classList.remove('open');
 });
 document.getElementById('btnDiscard').addEventListener('click',()=>{
   document.getElementById('saveModal').classList.remove('open');
-  pendingBlob=null;
-  showToast('Discarded');
 });
 
 // ─── Library ───
@@ -1147,7 +1151,19 @@ async function renderLibrary(){
       const v=all.find(x=>x.id===id);
       if(!v) return;
       if(action==='dl') dlVideo(v);
-      else if(action==='del'){if(confirm('Delete this recording?')){await dbDel(id);await renderLibrary();showToast('Deleted');}}
+      else if(action==='del'){
+        // confirmなし・DOM操作のみで削除（ツールバー表示防止）
+        await dbDel(id);
+        const card=btn.closest('.rec-card');
+        if(card) card.remove();
+        // 件数更新
+        const remaining=document.querySelectorAll('.rec-card').length;
+        const countEl=document.getElementById('libCount');
+        if(countEl) countEl.textContent=`${remaining} FILE${remaining!==1?'S':''}`;
+        if(remaining===0){
+          document.getElementById('libBody').innerHTML=`<div class="lib-empty"><div style="font-size:36px;opacity:0.3">🎬</div><div>NO RECORDINGS YET</div></div>`;
+        }
+      }
       else if(action==='preview') openPreview(v);
     });
   });

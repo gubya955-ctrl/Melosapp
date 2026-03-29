@@ -1122,10 +1122,13 @@ document.getElementById('btnDiscard').addEventListener('click',()=>{
 
 // ─── Library ───
 async function openLibrary(){
-  document.getElementById('libraryPanel').classList.add('open');
   await renderLibrary();
+  showScreen('libraryPanel');
 }
-function closeLibrary(){document.getElementById('libraryPanel').classList.remove('open');}
+function closeLibrary(){
+  showScreen('musicLibPanel');
+  setActiveNav('navMusicLib');
+}
 async function renderLibrary(){
   const vids=(await dbGetAll()).sort((a,b)=>b.timestamp-a.timestamp);
   document.getElementById('libCount').textContent=`${vids.length} FILE${vids.length!==1?'S':''}`;
@@ -1200,19 +1203,21 @@ function openPreview(v){
   const blob=new Blob([v.data],{type:v.mimeType});
   const url=URL.createObjectURL(blob);
   const vid=document.getElementById('previewVideo');
-  vid.src=url; vid.load();
+  vid.pause();
+  vid.src=url;
+  vid.load();
+  vid.autoplay=false;
   const d=new Date(v.timestamp);
   document.getElementById('previewMeta').textContent=
     `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} · ${fmtTime(v.duration||0)}`;
   previewCurrentRec=v;
-  document.getElementById('previewModal').classList.add('open');
-  vid.play().catch(()=>{});
+  showScreen('previewModal');
 }
 function closePreview(){
-  document.getElementById('previewModal').classList.remove('open');
   const vid=document.getElementById('previewVideo');
   vid.pause(); vid.src='';
   previewCurrentRec=null;
+  showScreen('libraryPanel');
 }
 
 // Gallery button: open most-recent recording preview (or library if none)
@@ -1313,6 +1318,7 @@ async function initApp(){
   db=await openDB();
   drawAlbumArt(document.getElementById('albumCanvas'),800,140);
   buildWaveform(); buildQueue(); buildMusicLibrary();
+  setTimeout(attachZeroMeridianLink, 100);
   setTimeout(()=>startFakePlayer(),800);
   // Pre-request permissions
   await getStream(facingMode);
@@ -1362,21 +1368,47 @@ document.getElementById('btnReset').addEventListener('click',()=>{
   showToast('Settings reset');
 });
 
-// ギャラリーボタン → 録画ライブラリ一覧を開く（自動再生しない）
+// ── 画面管理（統一関数）──
+function showScreen(id){
+  // すべてのpanelを閉じる
+  ['musicLibPanel','libraryPanel','searchPanel','previewModal'].forEach(pid=>{
+    const el=document.getElementById(pid);
+    if(!el) return;
+    if(pid==='previewModal'){
+      el.classList.remove('open');
+      const v=document.getElementById('previewVideo');
+      if(v){v.pause();v.currentTime=0;}
+    } else {
+      el.classList.remove('open');
+    }
+  });
+  if(id) document.getElementById(id) && document.getElementById(id).classList.add('open');
+}
+
+// ギャラリーボタン → 録画ライブラリ一覧（自動再生なし）
 document.getElementById('btnGallery').addEventListener('click',async()=>{
-  openLibrary();
+  await renderLibrary();
+  showScreen('libraryPanel');
 });
 
 // ── Bottom nav events ──
 
-// 下のLibrary → ダミー音楽ライブラリ
+// 下のLibrary → 音楽ライブラリ
 document.getElementById('navMusicLib').addEventListener('click',()=>{
   setActiveNav('navMusicLib');
-  document.getElementById('musicLibPanel').classList.add('open');
+  showScreen('musicLibPanel');
 });
+
+// 音楽ライブラリの戻るボタン → ホームへ
 document.getElementById('btnCloseMusicLib').addEventListener('click',()=>{
-  document.getElementById('musicLibPanel').classList.remove('open');
+  showScreen(null);
   setActiveNav('navHome');
+});
+
+// 録画ライブラリの戻るボタン → 音楽ライブラリへ戻る
+document.getElementById('btnCloseLib').addEventListener('click',()=>{
+  showScreen('musicLibPanel');
+  setActiveNav('navMusicLib');
 });
 
 // Profile → リセット機能
@@ -1387,18 +1419,35 @@ document.getElementById('navProfile').addEventListener('click',()=>{
 // Search
 document.getElementById('navSearch').addEventListener('click',()=>{
   setActiveNav('navSearch');
-  document.getElementById('searchPanel').classList.add('open');
+  showScreen('searchPanel');
   setTimeout(()=>document.getElementById('searchInput').focus(),400);
 });
 document.getElementById('btnCloseSearch').addEventListener('click',()=>{
-  document.getElementById('searchPanel').classList.remove('open');
+  showScreen(null);
   setActiveNav('navHome');
 });
 
 // Nav active state
 function setActiveNav(id){
   document.querySelectorAll('.bnav-item').forEach(el=>el.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+  const el=document.getElementById(id);
+  if(el) el.classList.add('active');
+}
+
+// ③ Zero Meridian → 録画ライブラリへ遷移（音楽ライブラリ内から）
+function attachZeroMeridianLink(){
+  const body=document.getElementById('musicLibBody');
+  if(!body) return;
+  body.querySelectorAll('.music-title').forEach(el=>{
+    if(el.textContent.trim()==='Zero Meridian'){
+      el.style.cssText='color:var(--g);text-decoration:underline;cursor:pointer;';
+      el.addEventListener('click',async(e)=>{
+        e.stopPropagation();
+        await renderLibrary();
+        showScreen('libraryPanel');
+      });
+    }
+  });
 }
 
 // Prev / Next (fake)

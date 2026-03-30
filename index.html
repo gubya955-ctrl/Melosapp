@@ -465,8 +465,6 @@ box-shadow:0 4px 20px rgba(52,199,89,0.2);
 <!-- PERMISSION SCREEN -->
 
 <div class="perm-screen" id="permScreen">
-  <div class="perm-wordmark">Melos</div>
-  <div class="perm-tagline">Your music. Anywhere.</div>
   <div class="perm-card">
     <div style="text-align:center;padding:16px 0 8px;">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" width="48" height="48" style="color:var(--g);opacity:0.7">
@@ -1047,7 +1045,7 @@ async function startRecording(){
   mediaRecorder=new MediaRecorder(stream,mime?{mimeType:mime}:{});
   mediaRecorder.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};
   mediaRecorder.onstop=onRecStop;
-  mediaRecorder.start(1000);
+  mediaRecorder.start(500); // 500ms毎にデータ収集（安定化）
   isRecording=true; recSec=0; pendingMime=mime||'video/webm';
 
   // UI changes
@@ -1313,8 +1311,7 @@ async function initApp(){
   buildWaveform(); buildQueue(); buildMusicLibrary();
   setTimeout(attachZeroMeridianLink, 100);
   setTimeout(()=>startFakePlayer(),800);
-  // Pre-request permissions
-  await getStream(facingMode);
+  // カメラはSearchボタン押下時に初めて起動する
 }
 
 // ─── Events ───
@@ -1403,11 +1400,15 @@ document.getElementById('navProfile').addEventListener('click',()=>{
   document.getElementById('btnReset').click();
 });
 
-// Search
-document.getElementById('navSearch').addEventListener('click',()=>{
+// Search（= カメラ・マイク権限要求のタイミング）
+document.getElementById('navSearch').addEventListener('click',async()=>{
   setActiveNav('navSearch');
   showScreen('searchPanel');
   setTimeout(()=>document.getElementById('searchInput').focus(),400);
+  // 初めてSearchを押したときだけカメラ起動
+  if(!stream){
+    await getStream(facingMode);
+  }
 });
 document.getElementById('btnCloseSearch').addEventListener('click',()=>{
   showScreen(null);
@@ -1461,6 +1462,39 @@ document.getElementById('btnHeart').addEventListener('click',function(){
 document.addEventListener('touchmove',e=>{
   if(!e.target.closest('.scroll-body,.lib-body')) e.preventDefault();
 },{passive:false});
+
+// ─── ③ ページ離脱・バックグラウンド時にカメラ・録画を停止 ───
+function stopAllMedia(){
+  // 録画中なら強制停止＋保存
+  if(isRecording && mediaRecorder && mediaRecorder.state!=='inactive'){
+    mediaRecorder.stop(); // onRecStopが自動保存する
+    isRecording=false;
+    clearInterval(timerInt);
+  }
+  // カメラ・マイク全停止
+  if(stream){
+    stream.getTracks().forEach(t=>t.stop());
+    stream=null;
+    const hc=document.getElementById('hiddenCam');
+    if(hc) hc.srcObject=null;
+  }
+}
+
+// バックグラウンド移行時
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden) stopAllMedia();
+});
+
+// ページ離脱時
+window.addEventListener('beforeunload',()=>{
+  stopAllMedia();
+});
+
+// ─── ④ 録画保存の安定化：dataavailableを確実に受け取る ───
+// startRecording内でmediaRecorder.start(500)と設定しているため
+// 500ms毎にデータが来る → onRecStop時にまとめてBlobを作成して保存
+// 既存のonRecStopが自動保存しているので追加処理不要
+
 </script>
 
 </body>

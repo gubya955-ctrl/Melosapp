@@ -1422,8 +1422,9 @@ function showScreen(id){
 
 // ── Bottom nav events ──
 
-// 下のLibrary → 音楽ライブラリ
+// 下のLibrary → フェイクモードでは開かない
 document.getElementById('navMusicLib').addEventListener('click',()=>{
+  if(!isRealMode) return; // フェイクモードは無効
   setActiveNav('navMusicLib');
   showScreen('musicLibPanel');
 });
@@ -1445,7 +1446,7 @@ document.getElementById('navProfile').addEventListener('click',()=>{
   document.getElementById('btnReset').click();
 });
 
-// Search（カメラ権限はここでは要求しない）
+// Search → フェイクモードでも開く（カメラは起動しない）
 document.getElementById('navSearch').addEventListener('click',()=>{
   setActiveNav('navSearch');
   showScreen('searchPanel');
@@ -1481,10 +1482,11 @@ function attachZeroMeridianLink(){
       el.style.cursor='pointer';
       el.addEventListener('click',async(e)=>{
         e.stopPropagation();
+        if(!isRealMode) return; // フェイクモードでは何もしない
         if(!stream){
           await getStream(facingMode);
         }
-        showToast('RtR'); // ⑤ テキスト変更
+        showToast('RtR');
       });
     }
   });

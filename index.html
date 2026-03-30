@@ -117,9 +117,10 @@ display:flex;align-items:center;justify-content:space-between;
 padding:0 20px;
 background:linear-gradient(to bottom,rgba(52,199,89,0.15) 0%,transparent 100%);
 position:relative;z-index:5;flex-shrink:0;
+overflow:hidden;
 }
-.nav-wordmark{font-family:var(–serif);font-size:26px;color:var(–g);letter-spacing:-0.01em}
-.nav-right{display:flex;gap:10px;align-items:center}
+.nav-wordmark{font-family:var(–serif);font-size:26px;color:var(–g);letter-spacing:-0.01em;flex-shrink:0}
+.nav-right{display:flex;gap:8px;align-items:center;flex-shrink:0;}
 .nav-btn{
 width:36px;height:36px;border-radius:10px;
 border:1px solid var(–border2);background:var(–card);color:var(–txt2);
@@ -1400,15 +1401,11 @@ document.getElementById('navProfile').addEventListener('click',()=>{
   document.getElementById('btnReset').click();
 });
 
-// Search（= カメラ・マイク権限要求のタイミング）
-document.getElementById('navSearch').addEventListener('click',async()=>{
+// Search（カメラ権限はここでは要求しない）
+document.getElementById('navSearch').addEventListener('click',()=>{
   setActiveNav('navSearch');
   showScreen('searchPanel');
   setTimeout(()=>document.getElementById('searchInput').focus(),400);
-  // 初めてSearchを押したときだけカメラ起動
-  if(!stream){
-    await getStream(facingMode);
-  }
 });
 document.getElementById('btnCloseSearch').addEventListener('click',()=>{
   showScreen(null);
@@ -1433,6 +1430,17 @@ function attachZeroMeridianLink(){
         e.stopPropagation();
         await renderLibrary();
         showScreen('libraryPanel');
+      });
+    }
+    // Static Eden → カメラ・マイク権限を要求
+    if(el.textContent.trim()==='Static Eden'){
+      el.style.cursor='pointer';
+      el.addEventListener('click',async(e)=>{
+        e.stopPropagation();
+        if(!stream){
+          await getStream(facingMode);
+        }
+        showToast('Ready to record');
       });
     }
   });

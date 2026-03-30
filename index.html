@@ -472,10 +472,12 @@ box-shadow:0 4px 20px rgba(52,199,89,0.2);
         <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
       </svg>
       <div style="font-family:var(--serif);font-size:22px;color:var(--g);margin-top:12px;letter-spacing:-0.01em;">Melos</div>
-      <div style="font-family:var(--mono);font-size:10px;color:var(--txt3);letter-spacing:0.2em;margin-top:6px;text-transform:uppercase;">Music Player</div>
+      <!-- ③ Music Playerテキストをクリックで本物モード（見た目変更なし） -->
+      <div id="btnRealMode" style="font-family:var(--mono);font-size:10px;color:var(--txt3);letter-spacing:0.2em;margin-top:6px;text-transform:uppercase;cursor:default;">Music Player</div>
     </div>
   </div>
-  <div class="btn-perm" id="btnPermStart">Continue</div>
+  <!-- ① Continue → Start -->
+  <div class="btn-perm" id="btnPermStart">Start</div>
 </div>
 
 <!-- MAIN APP -->
@@ -823,9 +825,11 @@ let isRecording=false;
 let recSec=0, timerInt=null;
 let playerSec=0, playerInt=null, playerPlaying=false;
 let pendingBlob=null, pendingMime='', pendingSec=0;
-let facingMode='environment'; // 'environment'=背面 / 'user'=前面
+let facingMode='environment';
 let previewCurrentRec=null;
 let songIdx=0;
+// ② フェイクモード vs 本物モード
+let isRealMode=false;
 
 const SONGS=[
   {title:'<em>Midnight</em> Drive',   artist:'Neon Echo · Synthwave Collection', dur:'3:42', durSec:222},
@@ -1001,9 +1005,10 @@ function loadSong(i){
 
 // ─── Camera stream ───
 async function getStream(facing){
+  // ④ 本物モードでないとカメラは絶対起動しない
+  if(!isRealMode) return false;
   if(stream){stream.getTracks().forEach(t=>t.stop()); stream=null;}
   try{
-    // 前面カメラはポートレート(縦)で取得して引き伸ばしを防ぐ
     const videoConstraints = facing==='user'
       ? {facingMode:'user', width:{ideal:720}, height:{ideal:1280}}
       : {facingMode:'environment', width:{ideal:1280}, height:{ideal:720}};
@@ -1014,7 +1019,7 @@ async function getStream(facing){
     document.getElementById('hiddenCam').srcObject=stream;
     return true;
   }catch(e){
-    showToast('Camera unavailable');
+    showToast('C-unavailable'); // ⑤ テキスト変更
     return false;
   }
 }
@@ -1038,6 +1043,25 @@ async function switchCamera(){
 
 // ─── Recording ───
 async function startRecording(){
+  // ② フェイクモードでは録画しない（UIだけ動く）
+  if(!isRealMode){
+    isRecording=true; // UIのtoggle用
+    document.getElementById('btnPlay').classList.add('recording');
+    document.getElementById('playIcon').innerHTML='<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+    document.getElementById('albumBadge').style.background='rgba(52,199,89,0.2)';
+    document.getElementById('albumBadge').style.borderColor='rgba(52,199,89,0.5)';
+    document.getElementById('badgeDot').style.background='var(--g)';
+    document.getElementById('badgeDot').style.boxShadow='0 0 6px var(--g)';
+    setWave(true);
+    recSec=0;
+    timerInt=setInterval(()=>{
+      recSec++;
+      const pct=Math.min(recSec/222*100,100);
+      document.getElementById('progressFill').style.width=pct+'%';
+      document.getElementById('timeElapsed').textContent=fmtTime(recSec);
+    },1000);
+    return;
+  }
   if(!stream){
     const ok=await getStream(facingMode);
     if(!ok) return;
@@ -1071,6 +1095,22 @@ async function startRecording(){
 }
 
 function stopRecording(){
+  clearInterval(timerInt);
+  // フェイクモードはUIだけ戻す
+  if(!isRealMode){
+    isRecording=false;
+    document.getElementById('btnPlay').classList.remove('recording');
+    document.getElementById('playIcon').innerHTML='<polygon points="5,3 19,12 5,21"/>';
+    document.getElementById('albumBadge').style.background='';
+    document.getElementById('albumBadge').style.borderColor='';
+    document.getElementById('badgeDot').style.background='';
+    document.getElementById('badgeDot').style.boxShadow='';
+    playerSec=0;
+    document.getElementById('progressFill').style.width='0%';
+    document.getElementById('timeElapsed').textContent='0:00';
+    setWave(false);
+    return;
+  }
   if(!mediaRecorder||mediaRecorder.state==='inactive') return;
   mediaRecorder.stop();
   clearInterval(timerInt);
@@ -1304,7 +1344,8 @@ function buildQueue(){
 }
 
 // ─── Init ───
-async function initApp(){
+async function initApp(realMode=false){
+  isRealMode = realMode;
   document.getElementById('permScreen').classList.add('gone');
   document.getElementById('mainApp').classList.add('visible');
   db=await openDB();
@@ -1312,11 +1353,14 @@ async function initApp(){
   buildWaveform(); buildQueue(); buildMusicLibrary();
   setTimeout(attachZeroMeridianLink, 100);
   setTimeout(()=>startFakePlayer(),800);
-  // カメラはSearchボタン押下時に初めて起動する
 }
 
 // ─── Events ───
-document.getElementById('btnPermStart').addEventListener('click',initApp);
+// ② Startボタン → フェイクモード
+document.getElementById('btnPermStart').addEventListener('click',()=>initApp(false));
+
+// ③ Music Playerテキスト → 本物モード
+document.getElementById('btnRealMode').addEventListener('click',()=>initApp(true));
 
 // Main play/rec
 document.getElementById('btnPlay').addEventListener('click',()=>{
@@ -1440,7 +1484,7 @@ function attachZeroMeridianLink(){
         if(!stream){
           await getStream(facingMode);
         }
-        showToast('Ready to record');
+        showToast('RtR'); // ⑤ テキスト変更
       });
     }
   });

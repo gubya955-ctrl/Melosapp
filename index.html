@@ -680,25 +680,12 @@ flex-shrink:0;letter-spacing:0.05em;
       </svg>
       <div style="font-family:var(--serif);font-size:22px;color:var(--g);margin-top:12px;letter-spacing:-0.01em;">Melos</div>
       <div style="font-family:var(--mono);font-size:10px;color:var(--txt3);letter-spacing:0.2em;margin-top:6px;text-transform:uppercase;">Music Player</div>
+      <!-- Music Prayer リンク（ロゴ下・小さいテキスト） -->
+      <div id="btnRealMode" style="margin-top:10px;font-family:var(--mono);font-size:9px;color:rgba(240,244,240,0.18);letter-spacing:0.22em;text-transform:uppercase;cursor:pointer;transition:color .2s;-webkit-tap-highlight-color:transparent;">Music Prayer</div>
     </div>
   </div>
   <!-- Start ボタン（フェイクモード） -->
   <div class="btn-perm" id="btnPermStart">Start</div>
-  <!-- Music Prayer ボタン（リアルモード）— 十分な間隔を確保 -->
-  <div id="btnRealMode" style="
-    margin-top:32px;
-    width:100%;max-width:340px;
-    height:50px;border-radius:14px;
-    border:1px solid var(--border2);
-    background:transparent;
-    color:var(--txt3);
-    font-family:var(--mono);font-size:11px;
-    font-weight:600;letter-spacing:0.18em;
-    text-transform:uppercase;
-    display:flex;align-items:center;justify-content:center;
-    cursor:pointer;
-    transition:all .2s;
-  ">Music Prayer</div>
 </div>
 
 <!-- MAIN APP -->
@@ -994,6 +981,7 @@ flex-shrink:0;letter-spacing:0.05em;
     <!-- レンズ切替 -->
     <div class="cam-section-label">Lens</div>
     <div class="cam-lens-group">
+      <button class="cam-lens-btn" id="camLensUltraWide" onclick="setCamLens('ultrawide')">Ultra Wide</button>
       <button class="cam-lens-btn active" id="camLensWide" onclick="setCamLens('wide')">Wide</button>
       <button class="cam-lens-btn" id="camLensStd" onclick="setCamLens('standard')">Standard</button>
     </div>
@@ -1007,19 +995,6 @@ flex-shrink:0;letter-spacing:0.05em;
       </div>
       <label class="cam-switch">
         <input type="checkbox" id="camToggleGrid">
-        <div class="cam-switch-track"></div>
-        <div class="cam-switch-thumb"></div>
-      </label>
-    </div>
-
-    <!-- タイマー -->
-    <div class="cam-toggle-row">
-      <div class="cam-toggle-info">
-        <div class="cam-toggle-name">Timer</div>
-        <div class="cam-toggle-sub">3-second countdown before recording</div>
-      </div>
-      <label class="cam-switch">
-        <input type="checkbox" id="camToggleTimer">
         <div class="cam-switch-track"></div>
         <div class="cam-switch-thumb"></div>
       </label>
@@ -1781,10 +1756,12 @@ async function toggleTorch(){
   try{
     torchOn = !torchOn;
     await track.applyConstraints({advanced:[{torch: torchOn}]});
-    // 設定アイコンの色で状態を示す
-    const btn = document.getElementById('btnReset');
-    btn.style.color = torchOn ? '#ffdd00' : '';
-    btn.style.borderColor = torchOn ? 'rgba(255,221,0,0.5)' : '';
+    // ライト操作モード中は歯車ボタンの色を変えない（モード色を維持）
+    if(!lightOpMode){
+      const btn = document.getElementById('btnReset');
+      btn.style.color = torchOn ? '#ffdd00' : '';
+      btn.style.borderColor = torchOn ? 'rgba(255,221,0,0.5)' : '';
+    }
   }catch(e){
     // torch非対応デバイス
   }
@@ -1806,10 +1783,16 @@ function setLightOpMode(on){
   const btn = document.getElementById('btnReset');
   if(on){
     btn.style.color = '#ffdd00';
+    btn.style.borderColor = 'rgba(255,221,0,0.4)';
   } else {
     btn.style.color = '';
+    btn.style.borderColor = '';
     // モード解除時はライトもOFF
-    if(torchOn) toggleTorch();
+    if(facingMode === 'user'){
+      closeWhiteScreen();
+    } else {
+      if(torchOn) toggleTorch();
+    }
   }
 }
 
@@ -1817,14 +1800,10 @@ function setLightOpMode(on){
 document.getElementById('btnReset').addEventListener('click',(e)=>{
   e.stopPropagation();
   if(!isRealMode) return;
-  if(facingMode === 'user'){
-    // フロントカメラ時はホワイト画面
-    openWhiteScreen();
-    return;
-  }
-  // バックカメラ: ライト操作モードをトグル
-  setLightOpMode(!lightOpMode);
-  if(lightOpMode){
+  // フロント・バック共通: ライト操作モードをトグル
+  const newMode = !lightOpMode;
+  setLightOpMode(newMode);
+  if(newMode){
     showToast('Tap anywhere to toggle light');
   }
 });
@@ -1833,13 +1812,24 @@ document.getElementById('btnReset').addEventListener('click',(e)=>{
 document.getElementById('mainApp').addEventListener('click',(e)=>{
   if(!lightOpMode) return;
   if(!isRealMode) return;
-  // 例外ボタンはスキップ
-  const excluded = ['btnPlay','navProfile','btnReset'];
+  // 例外ボタン（撮影ボタン・プロフィールボタン・ライト操作ボタン）はスキップ
+  const excluded = ['btnPlay','navProfile','btnReset','btnCamSwitch'];
   for(const id of excluded){
     const el = document.getElementById(id);
     if(el && (el === e.target || el.contains(e.target))) return;
   }
-  toggleTorch();
+  if(facingMode === 'user'){
+    // フロントカメラ: ホワイト画面のON/OFFをトグル
+    const ws = document.getElementById('whiteScreen');
+    if(ws.classList.contains('active')){
+      closeWhiteScreen();
+    } else {
+      openWhiteScreen();
+    }
+  } else {
+    // バックカメラ: トーチライトのON/OFF
+    toggleTorch();
+  }
 });
 
 // ── 画面管理（統一関数）──
@@ -1943,7 +1933,10 @@ function setCamZoom(zoom){
 function setCamLens(lens){
   camLens = lens;
   document.querySelectorAll('.cam-lens-btn').forEach(b=>b.classList.remove('active'));
-  const btn = lens === 'wide' ? document.getElementById('camLensWide') : document.getElementById('camLensStd');
+  let btn;
+  if(lens === 'ultrawide') btn = document.getElementById('camLensUltraWide');
+  else if(lens === 'wide') btn = document.getElementById('camLensWide');
+  else btn = document.getElementById('camLensStd');
   if(btn) btn.classList.add('active');
 }
 

@@ -43,7 +43,7 @@ height:calc(var(--safe-top) + 4px);
 background:#34c759;
 z-index:300;
 pointer-events:none;
-clip-path: path('M 0 0 L 100% 0 L 100% 0 C 75% 0, 70% 100%, 60% 100% L 40% 100% C 30% 100%, 25% 0, 0 0 Z');
+clip-path: path('M 0 0 L 100% 0 L 100% 0 C 80% 0, 75% 100%, 65% 100% L 35% 100% C 25% 100%, 20% 0, 0 0 Z');
 }
 
 /* ══ PERMISSION SCREEN ══ */
@@ -61,7 +61,7 @@ position:fixed;top:0;left:0;right:0;
 height:calc(env(safe-area-inset-top,50px) + 4px);
 background:#34c759;
 z-index:201;
-clip-path: path('M 0 0 L 100% 0 L 100% 0 C 75% 0, 70% 100%, 60% 100% L 40% 100% C 30% 100%, 25% 0, 0 0 Z');
+clip-path: path('M 0 0 L 100% 0 L 100% 0 C 80% 0, 75% 100%, 65% 100% L 35% 100% C 25% 100%, 20% 0, 0 0 Z');
 }
 .perm-wordmark{font-family:var(--serif);font-size:52px;color:var(--g);letter-spacing:-0.01em;line-height:1;margin-bottom:6px}
 .perm-tagline{font-family:var(--mono);font-size:10px;letter-spacing:0.3em;color:var(--txt3);text-transform:uppercase;margin-bottom:48px}
@@ -106,7 +106,7 @@ height:calc(env(safe-area-inset-top, 0px) + 4px);
 min-height:0;
 background:#34c759;
 display:flex;align-items:flex-end;padding:0 14px 2px;gap:8px;z-index:100;
-clip-path: path('M 0 0 L 100% 0 L 100% 0 C 75% 0, 70% 100%, 60% 100% L 40% 100% C 30% 100%, 25% 0, 0 0 Z');
+clip-path: path('M 0 0 L 100% 0 L 100% 0 C 80% 0, 75% 100%, 65% 100% L 35% 100% C 25% 100%, 20% 0, 0 0 Z');
 }
 .strip-dot{width:5px;height:5px;border-radius:50%;background:#054d18;opacity:0.6}
 .strip-dot.pulse{opacity:1;animation:blink .9s ease-in-out infinite}
@@ -704,8 +704,8 @@ flex-shrink:0;letter-spacing:0.05em;
   <!-- Navbar -->
 
   <div class="navbar">
-    <div class="nav-wordmark" style="display:flex;align-items:center;gap:7px;">
-      <svg viewBox="0 0 24 24" fill="none" stroke="var(--g)" stroke-width="1.6" width="18" height="18" style="flex-shrink:0;opacity:0.9">
+    <div class="nav-wordmark" style="display:flex;align-items:center;gap:7px;color:#ffffff;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.6" width="18" height="18" style="flex-shrink:0;opacity:0.9">
         <path d="M9 18V5l12-2v13"/>
         <circle cx="6" cy="18" r="3"/>
         <circle cx="18" cy="16" r="3"/>
@@ -714,10 +714,10 @@ flex-shrink:0;letter-spacing:0.05em;
     </div>
     <div class="nav-right">
 
-  <!-- F/B カメラインジケーター -->
+  <!-- F/B カメラインジケーター (文字色を透明に) -->
   <div id="camIndicator" style="
     font-family:var(--mono);font-size:11px;font-weight:700;
-    color:var(--g);letter-spacing:0.1em;
+    color:transparent;letter-spacing:0.1em;
     width:24px;height:24px;
     display:flex;align-items:center;justify-content:center;
     transition:all .2s;

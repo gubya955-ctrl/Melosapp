@@ -61,10 +61,9 @@ height:env(safe-area-inset-top,50px);
 background:#34c759;
 z-index:201;
 }
-.perm-screen.gone{display:none}
 .perm-wordmark{font-family:var(–serif);font-size:52px;color:var(–g);letter-spacing:-0.01em;line-height:1;margin-bottom:6px}
 .perm-tagline{font-family:var(–mono);font-size:10px;letter-spacing:0.3em;color:var(–txt3);text-transform:uppercase;margin-bottom:48px}
-.perm-card{width:100%;max-width:320px;background:var(–card);border:1px solid var(–border);border-radius:20px;padding:24px;margin-bottom:20px}
+.perm-card{width:100%;max-width:320px;background:var(–card);border:1px solid var(–border);border-radius:20px;padding:24px;margin-bottom:28px}
 .perm-card-title{font-size:10px;font-weight:600;color:var(–txt3);letter-spacing:0.2em;margin-bottom:16px;text-transform:uppercase;font-family:var(–mono)}
 .perm-row{display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(–border2)}
 .perm-row:last-child{border-bottom:none;padding-bottom:0}
@@ -87,6 +86,7 @@ display:flex;align-items:center;justify-content:center;
 opacity:1 !important;
 }
 .btn-perm:active{transform:scale(0.97);}
+.perm-screen.gone{display:none!important}
 
 /* ══ MAIN APP ══ */
 .app{
@@ -317,7 +317,7 @@ color:var(–txt);font-family:var(–sans);font-size:15px;
 .lib-header{display:flex;align-items:center;padding:12px 20px 16px;gap:12px;border-bottom:1px solid var(–border2)}
 .lib-title{flex:1;font-family:var(–serif);font-size:22px;color:var(–txt)}
 .lib-count{font-family:var(–mono);font-size:10px;color:var(–txt3);letter-spacing:0.1em}
-.btn-back{width:36px;height:36px;border-radius:50%;border:1px solid var(–border2);background:var(–card);color:var(–txt2);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.btn-back{width:36px;height:36px;border-radius:50%;border:1px solid var(--border2);background:var(--card);color:var(--txt2);display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;outline:none;}
 .btn-back:active{transform:scale(0.9)}
 .lib-body{flex:1;overflow-y:auto;padding:12px 16px;-webkit-overflow-scrolling:touch}
 .lib-body::-webkit-scrollbar{display:none}
@@ -679,12 +679,26 @@ flex-shrink:0;letter-spacing:0.05em;
         <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
       </svg>
       <div style="font-family:var(--serif);font-size:22px;color:var(--g);margin-top:12px;letter-spacing:-0.01em;">Melos</div>
-      <!-- ③ Music Playerテキストをクリックで本物モード（見た目変更なし） -->
-      <div id="btnRealMode" style="font-family:var(--mono);font-size:10px;color:var(--txt3);letter-spacing:0.2em;margin-top:6px;text-transform:uppercase;cursor:default;">Music Player</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--txt3);letter-spacing:0.2em;margin-top:6px;text-transform:uppercase;">Music Player</div>
     </div>
   </div>
-  <!-- ① Continue → Start -->
+  <!-- Start ボタン（フェイクモード） -->
   <div class="btn-perm" id="btnPermStart">Start</div>
+  <!-- Music Prayer ボタン（リアルモード）— 十分な間隔を確保 -->
+  <div id="btnRealMode" style="
+    margin-top:32px;
+    width:100%;max-width:340px;
+    height:50px;border-radius:14px;
+    border:1px solid var(--border2);
+    background:transparent;
+    color:var(--txt3);
+    font-family:var(--mono);font-size:11px;
+    font-weight:600;letter-spacing:0.18em;
+    text-transform:uppercase;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    transition:all .2s;
+  ">Music Prayer</div>
 </div>
 
 <!-- MAIN APP -->
@@ -701,15 +715,21 @@ flex-shrink:0;letter-spacing:0.05em;
   <!-- Navbar -->
 
   <div class="navbar">
-    <div class="nav-wordmark">Melos</div>
+    <div class="nav-wordmark" style="display:flex;align-items:center;gap:7px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--g)" stroke-width="1.6" width="18" height="18" style="flex-shrink:0;opacity:0.9">
+        <path d="M9 18V5l12-2v13"/>
+        <circle cx="6" cy="18" r="3"/>
+        <circle cx="18" cy="16" r="3"/>
+      </svg>
+      Melos
+    </div>
     <div class="nav-right">
 
   <!-- F/B カメラインジケーター -->
   <div id="camIndicator" style="
     font-family:var(--mono);font-size:11px;font-weight:700;
     color:var(--g);letter-spacing:0.1em;
-    width:24px;height:24px;border-radius:6px;
-    border:1px solid var(--border);background:var(--card);
+    width:24px;height:24px;
     display:flex;align-items:center;justify-content:center;
     transition:all .2s;
   ">B</div>
@@ -1151,69 +1171,154 @@ function showToast(msg){
 }
 
 // ─── Canvas album art ───
-function drawAlbumArt(canvas,size=800,hue=140){
+function drawAlbumArt(canvas,size=800,hue=140,style=0){
   canvas.width=size; canvas.height=size;
   const ctx=canvas.getContext('2d');
-
-  // 背景グラデーション
-  const bg=ctx.createLinearGradient(0,0,size,size);
-  bg.addColorStop(0,`hsl(${hue},45%,12%)`);
-  bg.addColorStop(0.5,`hsl(${hue+20},35%,8%)`);
-  bg.addColorStop(1,`hsl(${hue-20},50%,6%)`);
-  ctx.fillStyle=bg; ctx.fillRect(0,0,size,size);
-
-  // ノイズテクスチャ風のグレイン
-  for(let i=0;i<800;i++){
-    const x=Math.random()*size, y=Math.random()*size;
-    const r=Math.random()*1.5;
-    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
-    ctx.fillStyle=`rgba(255,255,255,${Math.random()*0.03})`;
-    ctx.fill();
-  }
-
-  // レコード盤（大きな円）
   const cx=size*0.5, cy=size*0.5;
-  const grad=ctx.createRadialGradient(cx,cy,0,cx,cy,size*0.42);
-  grad.addColorStop(0,`hsl(${hue},30%,14%)`);
-  grad.addColorStop(0.3,`hsl(${hue},25%,10%)`);
-  grad.addColorStop(0.7,`hsl(${hue},20%,8%)`);
-  grad.addColorStop(1,`hsl(${hue},15%,6%)`);
-  ctx.beginPath(); ctx.arc(cx,cy,size*0.42,0,Math.PI*2);
-  ctx.fillStyle=grad; ctx.fill();
 
-  // レコードの溝（同心円）
-  for(let i=1;i<18;i++){
-    const r=size*0.07+i*size*0.02;
-    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
-    ctx.strokeStyle=`hsla(${hue},40%,50%,${0.04+i*0.002})`;
-    ctx.lineWidth=0.8; ctx.stroke();
+  // スタイル0: レコード盤（デフォルト）
+  // スタイル1: 幾何学グリッド
+  // スタイル2: 波形アート
+
+  if(style===1){
+    // ── 幾何学グリッドスタイル ──
+    const bg=ctx.createLinearGradient(0,size,size,0);
+    bg.addColorStop(0,`hsl(${hue},50%,7%)`);
+    bg.addColorStop(1,`hsl(${hue+30},40%,14%)`);
+    ctx.fillStyle=bg; ctx.fillRect(0,0,size,size);
+    // グリッドライン
+    const step=size/8;
+    ctx.strokeStyle=`hsla(${hue},60%,50%,0.08)`;
+    ctx.lineWidth=0.8;
+    for(let i=0;i<=8;i++){
+      ctx.beginPath(); ctx.moveTo(i*step,0); ctx.lineTo(i*step,size); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0,i*step); ctx.lineTo(size,i*step); ctx.stroke();
+    }
+    // 対角線
+    ctx.strokeStyle=`hsla(${hue},70%,60%,0.12)`;
+    ctx.lineWidth=1;
+    for(let i=-8;i<=8;i++){
+      ctx.beginPath(); ctx.moveTo(i*step,0); ctx.lineTo(i*step+size,size); ctx.stroke();
+    }
+    // 中央の六角形
+    ctx.beginPath();
+    for(let i=0;i<6;i++){
+      const a=Math.PI/3*i-Math.PI/6;
+      const r=size*0.28;
+      i===0?ctx.moveTo(cx+r*Math.cos(a),cy+r*Math.sin(a)):ctx.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a));
+    }
+    ctx.closePath();
+    ctx.strokeStyle=`hsla(${hue},70%,55%,0.5)`;
+    ctx.lineWidth=2; ctx.stroke();
+    // 内側の六角形
+    ctx.beginPath();
+    for(let i=0;i<6;i++){
+      const a=Math.PI/3*i;
+      const r=size*0.14;
+      i===0?ctx.moveTo(cx+r*Math.cos(a),cy+r*Math.sin(a)):ctx.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a));
+    }
+    ctx.closePath();
+    ctx.fillStyle=`hsla(${hue},60%,50%,0.15)`; ctx.fill();
+    ctx.strokeStyle=`hsla(${hue},70%,60%,0.6)`;
+    ctx.lineWidth=1.5; ctx.stroke();
+    // 中心点
+    ctx.beginPath(); ctx.arc(cx,cy,size*0.03,0,Math.PI*2);
+    ctx.fillStyle=`hsl(${hue},70%,55%)`; ctx.fill();
+    // グロー
+    const glow=ctx.createRadialGradient(cx,cy,0,cx,cy,size*0.3);
+    glow.addColorStop(0,`hsla(${hue},80%,60%,0.12)`);
+    glow.addColorStop(1,'transparent');
+    ctx.fillStyle=glow; ctx.fillRect(0,0,size,size);
+
+  } else if(style===2){
+    // ── 波形アートスタイル ──
+    const bg=ctx.createLinearGradient(0,0,0,size);
+    bg.addColorStop(0,`hsl(${hue},40%,5%)`);
+    bg.addColorStop(0.5,`hsl(${hue+15},35%,10%)`);
+    bg.addColorStop(1,`hsl(${hue-10},45%,6%)`);
+    ctx.fillStyle=bg; ctx.fillRect(0,0,size,size);
+    // 複数の波形レイヤー
+    const layers=[
+      {amp:size*0.12, freq:0.015, phase:0,    alpha:0.35, width:2.5},
+      {amp:size*0.08, freq:0.022, phase:1.2,  alpha:0.25, width:1.8},
+      {amp:size*0.18, freq:0.009, phase:2.5,  alpha:0.15, width:3.5},
+      {amp:size*0.05, freq:0.035, phase:0.8,  alpha:0.45, width:1.2},
+    ];
+    layers.forEach(l=>{
+      ctx.beginPath();
+      for(let x=0;x<=size;x+=2){
+        const y=cy+Math.sin(x*l.freq+l.phase)*l.amp+Math.sin(x*l.freq*2.3+l.phase)*l.amp*0.3;
+        x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      }
+      ctx.strokeStyle=`hsla(${hue},65%,55%,${l.alpha})`;
+      ctx.lineWidth=l.width; ctx.stroke();
+    });
+    // 縦のグロー帯
+    for(let i=0;i<5;i++){
+      const x=size*(0.15+i*0.18);
+      const g=ctx.createLinearGradient(x-size*0.04,0,x+size*0.04,0);
+      g.addColorStop(0,'transparent');
+      g.addColorStop(0.5,`hsla(${hue},70%,55%,0.06)`);
+      g.addColorStop(1,'transparent');
+      ctx.fillStyle=g; ctx.fillRect(0,0,size,size);
+    }
+    // 中央グロー
+    const glow=ctx.createRadialGradient(cx,cy,0,cx,cy,size*0.25);
+    glow.addColorStop(0,`hsla(${hue},80%,60%,0.15)`);
+    glow.addColorStop(1,'transparent');
+    ctx.fillStyle=glow; ctx.fillRect(0,0,size,size);
+    // ノイズ
+    for(let i=0;i<600;i++){
+      ctx.fillStyle=`rgba(255,255,255,${Math.random()*0.025})`;
+      ctx.fillRect(Math.random()*size,Math.random()*size,1,1);
+    }
+
+  } else {
+    // ── スタイル0: レコード盤（デフォルト）──
+    const bg=ctx.createLinearGradient(0,0,size,size);
+    bg.addColorStop(0,`hsl(${hue},45%,12%)`);
+    bg.addColorStop(0.5,`hsl(${hue+20},35%,8%)`);
+    bg.addColorStop(1,`hsl(${hue-20},50%,6%)`);
+    ctx.fillStyle=bg; ctx.fillRect(0,0,size,size);
+    for(let i=0;i<800;i++){
+      const x=Math.random()*size, y=Math.random()*size;
+      const r=Math.random()*1.5;
+      ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(255,255,255,${Math.random()*0.03})`;
+      ctx.fill();
+    }
+    const grad=ctx.createRadialGradient(cx,cy,0,cx,cy,size*0.42);
+    grad.addColorStop(0,`hsl(${hue},30%,14%)`);
+    grad.addColorStop(0.3,`hsl(${hue},25%,10%)`);
+    grad.addColorStop(0.7,`hsl(${hue},20%,8%)`);
+    grad.addColorStop(1,`hsl(${hue},15%,6%)`);
+    ctx.beginPath(); ctx.arc(cx,cy,size*0.42,0,Math.PI*2);
+    ctx.fillStyle=grad; ctx.fill();
+    for(let i=1;i<18;i++){
+      const r=size*0.07+i*size*0.02;
+      ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
+      ctx.strokeStyle=`hsla(${hue},40%,50%,${0.04+i*0.002})`;
+      ctx.lineWidth=0.8; ctx.stroke();
+    }
+    const labelGrad=ctx.createRadialGradient(cx-size*0.02,cy-size*0.02,0,cx,cy,size*0.12);
+    labelGrad.addColorStop(0,`hsl(${hue},60%,22%)`);
+    labelGrad.addColorStop(1,`hsl(${hue},40%,14%)`);
+    ctx.beginPath(); ctx.arc(cx,cy,size*0.12,0,Math.PI*2);
+    ctx.fillStyle=labelGrad; ctx.fill();
+    ctx.beginPath(); ctx.arc(cx,cy,size*0.12,0,Math.PI*2);
+    ctx.strokeStyle=`hsla(${hue},60%,50%,0.15)`;
+    ctx.lineWidth=1.5; ctx.stroke();
+    const glow=ctx.createRadialGradient(cx,cy,0,cx,cy,size*0.08);
+    glow.addColorStop(0,'rgba(52,199,89,0.25)');
+    glow.addColorStop(1,'transparent');
+    ctx.fillStyle=glow; ctx.fillRect(0,0,size,size);
+    ctx.beginPath(); ctx.arc(cx,cy,size*0.025,0,Math.PI*2);
+    ctx.fillStyle='#0a0a0a'; ctx.fill();
+    const shine=ctx.createRadialGradient(size*0.75,size*0.25,0,size*0.75,size*0.25,size*0.35);
+    shine.addColorStop(0,`hsla(${hue},70%,70%,0.06)`);
+    shine.addColorStop(1,'transparent');
+    ctx.fillStyle=shine; ctx.fillRect(0,0,size,size);
   }
-
-  // 中央ラベル部分（明るい円）
-  const labelGrad=ctx.createRadialGradient(cx-size*0.02,cy-size*0.02,0,cx,cy,size*0.12);
-  labelGrad.addColorStop(0,`hsl(${hue},60%,22%)`);
-  labelGrad.addColorStop(1,`hsl(${hue},40%,14%)`);
-  ctx.beginPath(); ctx.arc(cx,cy,size*0.12,0,Math.PI*2);
-  ctx.fillStyle=labelGrad; ctx.fill();
-  ctx.beginPath(); ctx.arc(cx,cy,size*0.12,0,Math.PI*2);
-  ctx.strokeStyle=`hsla(${hue},60%,50%,0.15)`;
-  ctx.lineWidth=1.5; ctx.stroke();
-
-  // 中央の緑グロー
-  const glow=ctx.createRadialGradient(cx,cy,0,cx,cy,size*0.08);
-  glow.addColorStop(0,'rgba(52,199,89,0.25)');
-  glow.addColorStop(1,'transparent');
-  ctx.fillStyle=glow; ctx.fillRect(0,0,size,size);
-
-  // 中央穴
-  ctx.beginPath(); ctx.arc(cx,cy,size*0.025,0,Math.PI*2);
-  ctx.fillStyle='#0a0a0a'; ctx.fill();
-
-  // 右下に光の反射
-  const shine=ctx.createRadialGradient(size*0.75,size*0.25,0,size*0.75,size*0.25,size*0.35);
-  shine.addColorStop(0,`hsla(${hue},70%,70%,0.06)`);
-  shine.addColorStop(1,'transparent');
-  ctx.fillStyle=shine; ctx.fillRect(0,0,size,size);
 }
 function drawQueueThumb(canvas,hue){
   canvas.width=80; canvas.height=80;
@@ -1288,7 +1393,8 @@ function loadSong(i){
   document.getElementById('timeDuration').textContent=s.dur;
   playerSec=0;
   const hues=[140,195,280];
-  drawAlbumArt(document.getElementById('albumCanvas'),800,hues[i]||140);
+  const styles=[0,1,2];
+  drawAlbumArt(document.getElementById('albumCanvas'),800,hues[i]||140,styles[i]||0);
 }
 
 // ─── Camera stream ───
@@ -1317,6 +1423,7 @@ async function switchCamera(){
   if(isRecording) return;
   // トーチをオフにしてからスイッチ
   torchOn = false;
+  lightOpMode = false;
   const btn = document.getElementById('btnReset');
   btn.style.color = '';
   btn.style.borderColor = '';
@@ -1574,26 +1681,26 @@ if(/iPad|iPhone|iPod/.test(navigator.userAgent)){
 
 // ─── Fake Music Library (20 songs) ───
 const MUSIC_LIBRARY = [
-  {title:'Midnight Drive',      artist:'Neon Echo',        dur:'3:42', hue:140},
-  {title:'Glass Horizon',       artist:'Ama Neri',         dur:'4:18', hue:195},
-  {title:'Neon Rainfall',       artist:'Void Circuit',     dur:'5:01', hue:280},
-  {title:'Carbon Dawn',         artist:'Stellar Node',     dur:'3:28', hue:30},
-  {title:'Parallel Light',      artist:'Echoes of Dusk',   dur:'3:55', hue:200},
-  {title:'Velvet Static',       artist:'Low Hum',          dur:'4:44', hue:260},
-  {title:'Drift Protocol',      artist:'System Fade',      dur:'3:12', hue:170},
-  {title:'Obsidian Wave',       artist:'Dark Matter',      dur:'5:33', hue:220},
-  {title:'Signal Lost',         artist:'Null Carrier',     dur:'4:07', hue:340},
-  {title:'Aurora Index',        artist:'Cold Bloom',       dur:'3:51', hue:180},
-  {title:'Iron Lullaby',        artist:'Rust & Wire',      dur:'4:29', hue:20},
-  {title:'Phase Collapse',      artist:'Void Circuit',     dur:'3:38', hue:270},
-  {title:'Shallow Frequency',   artist:'Ama Neri',         dur:'5:14', hue:155},
-  {title:'Chrome Reverie',      artist:'Neon Echo',        dur:'4:02', hue:190},
-  {title:'Hollow Pulse',        artist:'Echoes of Dusk',   dur:'3:47', hue:310},
-  {title:'Terminal Bloom',      artist:'Stellar Node',     dur:'4:55', hue:130},
-  {title:'Spectral Highway',    artist:'System Fade',      dur:'3:21', hue:240},
-  {title:'Last Coordinates',    artist:'Cold Bloom',       dur:'4:36', hue:165},
-  {title:'Static Eden',         artist:'Low Hum',          dur:'5:08', hue:290},
-  {title:'Zero Meridian',       artist:'Dark Matter',      dur:'3:59', hue:50},
+  {title:'Midnight Drive',      artist:'Neon Echo',        dur:'3:42', hue:140, style:0},
+  {title:'Glass Horizon',       artist:'Ama Neri',         dur:'4:18', hue:195, style:1},
+  {title:'Neon Rainfall',       artist:'Void Circuit',     dur:'5:01', hue:280, style:2},
+  {title:'Carbon Dawn',         artist:'Stellar Node',     dur:'3:28', hue:30,  style:0},
+  {title:'Parallel Light',      artist:'Echoes of Dusk',   dur:'3:55', hue:200, style:1},
+  {title:'Velvet Static',       artist:'Low Hum',          dur:'4:44', hue:260, style:2},
+  {title:'Drift Protocol',      artist:'System Fade',      dur:'3:12', hue:170, style:0},
+  {title:'Obsidian Wave',       artist:'Dark Matter',      dur:'5:33', hue:220, style:1},
+  {title:'Signal Lost',         artist:'Null Carrier',     dur:'4:07', hue:340, style:2},
+  {title:'Aurora Index',        artist:'Cold Bloom',       dur:'3:51', hue:180, style:0},
+  {title:'Iron Lullaby',        artist:'Rust & Wire',      dur:'4:29', hue:20,  style:1},
+  {title:'Phase Collapse',      artist:'Void Circuit',     dur:'3:38', hue:270, style:2},
+  {title:'Shallow Frequency',   artist:'Ama Neri',         dur:'5:14', hue:155, style:0},
+  {title:'Chrome Reverie',      artist:'Neon Echo',        dur:'4:02', hue:190, style:1},
+  {title:'Hollow Pulse',        artist:'Echoes of Dusk',   dur:'3:47', hue:310, style:2},
+  {title:'Terminal Bloom',      artist:'Stellar Node',     dur:'4:55', hue:130, style:0},
+  {title:'Spectral Highway',    artist:'System Fade',      dur:'3:21', hue:240, style:1},
+  {title:'Last Coordinates',    artist:'Cold Bloom',       dur:'4:36', hue:165, style:2},
+  {title:'Static Eden',         artist:'Low Hum',          dur:'5:08', hue:290, style:0},
+  {title:'Zero Meridian',       artist:'Dark Matter',      dur:'3:59', hue:50,  style:1},
 ];
 
 function buildMusicLibrary(){
@@ -1617,7 +1724,7 @@ function buildMusicLibrary(){
   `).join('');
   MUSIC_LIBRARY.forEach((_,i)=>{
     const c=document.getElementById('mlt'+i);
-    if(c) drawQueueThumb(c, MUSIC_LIBRARY[i].hue);
+    if(c) drawAlbumArt(c, 80, MUSIC_LIBRARY[i].hue, MUSIC_LIBRARY[i].style||0);
   });
 }
 
@@ -1642,7 +1749,7 @@ async function initApp(realMode=false){
   document.getElementById('permScreen').classList.add('gone');
   document.getElementById('mainApp').classList.add('visible');
   db=await openDB();
-  drawAlbumArt(document.getElementById('albumCanvas'),800,140);
+  drawAlbumArt(document.getElementById('albumCanvas'),800,140,0);
   buildWaveform(); buildQueue(); buildMusicLibrary();
   setTimeout(attachZeroMeridianLink, 100);
   setTimeout(()=>startFakePlayer(),800);
@@ -1691,15 +1798,48 @@ function closeWhiteScreen(){
   document.getElementById('whiteScreen').classList.remove('active');
 }
 
-document.getElementById('btnReset').addEventListener('click',()=>{
-  if(!isRealMode) return; // フェイクモードでは無効
-  if(facingMode === 'environment'){
-    // バックカメラ → ライト点灯/消灯
-    toggleTorch();
+// ─── ライト操作モード ───
+let lightOpMode = false; // ライト操作可能モード
+
+function setLightOpMode(on){
+  lightOpMode = on;
+  const btn = document.getElementById('btnReset');
+  if(on){
+    btn.style.color = '#ffdd00';
   } else {
-    // フロントカメラ → ホワイト画面（タップで閉じる）
-    openWhiteScreen();
+    btn.style.color = '';
+    // モード解除時はライトもOFF
+    if(torchOn) toggleTorch();
   }
+}
+
+// 歯車ボタン: ライト操作モードのトグル
+document.getElementById('btnReset').addEventListener('click',(e)=>{
+  e.stopPropagation();
+  if(!isRealMode) return;
+  if(facingMode === 'user'){
+    // フロントカメラ時はホワイト画面
+    openWhiteScreen();
+    return;
+  }
+  // バックカメラ: ライト操作モードをトグル
+  setLightOpMode(!lightOpMode);
+  if(lightOpMode){
+    showToast('Tap anywhere to toggle light');
+  }
+});
+
+// 画面タップでライトON/OFF（ライト操作モード中）
+document.getElementById('mainApp').addEventListener('click',(e)=>{
+  if(!lightOpMode) return;
+  if(!isRealMode) return;
+  // 例外ボタンはスキップ
+  const excluded = ['btnPlay','navProfile','btnReset'];
+  for(const id of excluded){
+    const el = document.getElementById(id);
+    if(el && (el === e.target || el.contains(e.target))) return;
+  }
+  toggleTorch();
 });
 
 // ── 画面管理（統一関数）──
@@ -1744,6 +1884,7 @@ document.getElementById('navProfile').addEventListener('click',()=>{
   if(isRecording) stopRecording();
   stopFakePlayer();
   torchOn=false;
+  lightOpMode=false;
   closeWhiteScreen();
   if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
   document.getElementById('hiddenCam').srcObject=null;

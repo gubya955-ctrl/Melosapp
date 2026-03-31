@@ -464,6 +464,80 @@ z-index:200;
 display:none;
 }
 .white-screen.active{display:block;}
+
+/* ══ LYRICS PANEL ══ */
+.lyrics-panel{
+position:fixed;inset:0;z-index:60;
+background:var(–bg);
+transform:translateY(100%);
+transition:transform .4s cubic-bezier(0.32,0.72,0,1);
+display:flex;flex-direction:column;
+padding-top:max(env(safe-area-inset-top),20px);
+}
+.lyrics-panel.open{transform:translateY(0);}
+
+.lyrics-header{
+display:flex;align-items:center;
+padding:12px 20px 14px;
+gap:12px;
+border-bottom:1px solid var(–border2);
+flex-shrink:0;
+}
+.lyrics-header-info{flex:1;min-width:0;}
+.lyrics-header-title{
+font-family:var(–serif);font-size:16px;
+color:var(–txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.lyrics-header-artist{
+font-size:11px;color:var(–txt2);margin-top:2px;
+}
+.lyrics-body{
+flex:1;overflow-y:auto;padding:28px 24px 120px;
+-webkit-overflow-scrolling:touch;
+}
+.lyrics-body::-webkit-scrollbar{display:none}
+
+.lyric-line{
+font-family:var(–serif);
+font-size:22px;
+line-height:1.55;
+color:rgba(240,244,240,0.28);
+margin-bottom:6px;
+transition:color .4s, font-size .3s;
+cursor:default;
+letter-spacing:-0.01em;
+}
+.lyric-line.active{
+color:var(–txt);
+font-size:26px;
+}
+.lyric-line.passed{
+color:rgba(240,244,240,0.45);
+}
+/* 録画タイマーを歌詞に埋め込む */
+.lyric-line.rec-embed{
+color:rgba(52,199,89,0.0); /* 完全透明 - 見えない */
+font-size:0;
+margin:0;height:0;overflow:hidden;
+}
+.lyrics-close{
+width:36px;height:36px;border-radius:50%;
+border:1px solid var(–border2);background:var(–card);
+color:var(–txt2);display:flex;align-items:center;justify-content:center;
+cursor:pointer;flex-shrink:0;
+}
+.lyrics-close:active{transform:scale(0.9);}
+.lyrics-now-pill{
+display:inline-flex;align-items:center;gap:6px;
+background:var(–g-soft);border:1px solid var(–border);
+border-radius:100px;padding:4px 12px;
+font-family:var(–mono);font-size:9px;color:var(–g);letter-spacing:0.15em;
+margin-bottom:20px;
+}
+.lyrics-now-pill-dot{
+width:5px;height:5px;border-radius:50%;background:var(–g);
+animation:blink .9s ease-in-out infinite;
+}
 </style>
 
 </head>
@@ -476,6 +550,21 @@ display:none;
 <!-- WHITE SCREEN (フロントカメラ設定ボタン時) -->
 
 <div class="white-screen" id="whiteScreen" onclick="closeWhiteScreen()"></div>
+
+<!-- LYRICS PANEL -->
+
+<div class="lyrics-panel" id="lyricsPanel">
+  <div class="lyrics-header">
+    <div class="lyrics-close" id="btnCloseLyrics">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 13L13 1M1 1l12 12"/></svg>
+    </div>
+    <div class="lyrics-header-info">
+      <div class="lyrics-header-title" id="lyricsSongTitle">Midnight Drive</div>
+      <div class="lyrics-header-artist" id="lyricsArtist">Neon Echo</div>
+    </div>
+  </div>
+  <div class="lyrics-body" id="lyricsBody"></div>
+</div>
 
 <!-- PERMISSION SCREEN -->
 
@@ -549,7 +638,7 @@ display:none;
   <div class="scroll-body">
 
 ```
-<!-- Album Hero -->
+<!-- Album Hero (長押しで歌詞表示) -->
 <div class="album-hero" id="albumHero">
   <canvas class="album-art-canvas" id="albumCanvas"></canvas>
   <div class="album-overlay"></div>
@@ -1585,10 +1674,209 @@ window.addEventListener('beforeunload',()=>{
   stopAllMedia();
 });
 
-// ─── ④ 録画保存の安定化：dataavailableを確実に受け取る ───
-// startRecording内でmediaRecorder.start(500)と設定しているため
-// 500ms毎にデータが来る → onRecStop時にまとめてBlobを作成して保存
-// 既存のonRecStopが自動保存しているので追加処理不要
+// ─── ④ 録画保存の安定化 ───
+
+// ══════════════════════════════
+// LYRICS SYSTEM
+// ══════════════════════════════
+
+// 曲ごとの歌詞データ（タイミング付き）
+const LYRICS_DATA = {
+  'Midnight Drive': [
+    {t:0,   text:''},
+    {t:4,   text:'Neon signs bleed through the rain'},
+    {t:8,   text:'Driving nowhere, feeling everything'},
+    {t:13,  text:'The city breathes in frequencies'},
+    {t:18,  text:'We can\'t name'},
+    {t:23,  text:''},
+    {t:26,  text:'Headlights trace the broken lines'},
+    {t:31,  text:'Your voice still echoes through the night'},
+    {t:36,  text:'I chase the ghost of what we were'},
+    {t:41,  text:'In midnight drives'},
+    {t:46,  text:''},
+    {t:49,  text:'And the highway calls'},
+    {t:53,  text:'Like a dream that never falls'},
+    {t:58,  text:'Into silence, into black'},
+    {t:63,  text:'There\'s no turning back'},
+    {t:68,  text:''},
+    {t:72,  text:'Midnight drive'},
+    {t:76,  text:'Midnight drive'},
+    {t:80,  text:'Midnight drive'},
+    {t:86,  text:''},
+    {t:90,  text:'Static on the radio'},
+    {t:95,  text:'Cities pass like vertigo'},
+    {t:100, text:'I leave the windows down for you'},
+    {t:105, text:'The way you used to'},
+    {t:110, text:''},
+    {t:113, text:'Midnight drive'},
+    {t:117, text:'Midnight drive...'},
+  ],
+  'Glass Horizon': [
+    {t:0,   text:''},
+    {t:5,   text:'Standing at the glass horizon'},
+    {t:10,  text:'Where the sky becomes the sea'},
+    {t:15,  text:'Everything is still and boundless'},
+    {t:20,  text:'Nothing here but you and me'},
+    {t:25,  text:''},
+    {t:29,  text:'Soft light folds across the water'},
+    {t:34,  text:'Colour fades to white and grey'},
+    {t:39,  text:'All the words we never finished'},
+    {t:44,  text:'Slowly drift and float away'},
+    {t:50,  text:''},
+    {t:54,  text:'Glass horizon, hold me gently'},
+    {t:59,  text:'In your endless open arms'},
+    {t:64,  text:'Glass horizon, I surrender'},
+    {t:69,  text:'To your quiet, timeless calm'},
+    {t:75,  text:''},
+    {t:79,  text:'We are just a breath of morning'},
+    {t:84,  text:'Passing through a world of light'},
+    {t:89,  text:'Glass horizon always waiting'},
+    {t:94,  text:'At the edges of the night'},
+  ],
+  'Neon Rainfall': [
+    {t:0,   text:''},
+    {t:6,   text:'Neon rainfall on the pavement'},
+    {t:11,  text:'Colors bleed and start to run'},
+    {t:16,  text:'Every drop a tiny mirror'},
+    {t:21,  text:'Reflecting everything undone'},
+    {t:27,  text:''},
+    {t:31,  text:'Puddles hold the sky in fragments'},
+    {t:36,  text:'Skyscrapers dissolve in mist'},
+    {t:41,  text:'I walk through neon constellations'},
+    {t:46,  text:'On a night like this'},
+    {t:52,  text:''},
+    {t:56,  text:'Neon rainfall, wash me over'},
+    {t:61,  text:'Flood the streets inside my mind'},
+    {t:66,  text:'Neon rainfall, pull me under'},
+    {t:71,  text:'Leave the daylight far behind'},
+    {t:77,  text:''},
+    {t:82,  text:'Ultraviolet, ultraviolet'},
+    {t:87,  text:'Every color turning violet'},
+    {t:93,  text:'Neon rainfall, neon rainfall'},
+    {t:99,  text:'Wash it all away...'},
+  ],
+};
+
+// デフォルト歌詞（曲データがない場合）
+const DEFAULT_LYRICS = [
+  {t:0,   text:''},
+  {t:5,   text:'♪ ♪ ♪'},
+  {t:10,  text:''},
+  {t:15,  text:'♪ ♪ ♪'},
+  {t:20,  text:''},
+];
+
+let lyricsInterval = null;
+let currentLyrics = [];
+let lyricsActive = false;
+
+function getLyricsForSong(songTitle){
+  // HTMLタグを除去してテキストのみ取得
+  const plain = songTitle.replace(/<[^>]+>/g,'');
+  for(const key of Object.keys(LYRICS_DATA)){
+    if(plain.includes(key) || key.includes(plain)) return LYRICS_DATA[key];
+  }
+  return DEFAULT_LYRICS;
+}
+
+function buildLyricsBody(lyrics){
+  const body = document.getElementById('lyricsBody');
+  body.innerHTML = `
+    <div class="lyrics-now-pill">
+      <div class="lyrics-now-pill-dot"></div>
+      LYRICS
+    </div>
+  ` + lyrics.map((line,i)=>`
+    <div class="lyric-line" id="lyricLine${i}">${line.text || '　'}</div>
+  `).join('');
+}
+
+function updateLyricsHighlight(currentSec){
+  if(!currentLyrics.length) return;
+  let activeIdx = 0;
+  for(let i=0; i<currentLyrics.length; i++){
+    if(currentSec >= currentLyrics[i].t) activeIdx = i;
+  }
+  currentLyrics.forEach((_,i)=>{
+    const el = document.getElementById('lyricLine'+i);
+    if(!el) return;
+    if(i === activeIdx){
+      el.classList.add('active');
+      el.classList.remove('passed');
+      // 自動スクロール
+      el.scrollIntoView({behavior:'smooth', block:'center'});
+    } else if(i < activeIdx){
+      el.classList.remove('active');
+      el.classList.add('passed');
+    } else {
+      el.classList.remove('active','passed');
+    }
+  });
+}
+
+function openLyrics(){
+  const titleEl = document.getElementById('songTitle');
+  const artistEl = document.getElementById('songArtist');
+  const title = titleEl ? titleEl.innerHTML : '';
+  const artist = artistEl ? artistEl.textContent : '';
+
+  document.getElementById('lyricsSongTitle').innerHTML = title;
+  document.getElementById('lyricsArtist').textContent = artist;
+
+  currentLyrics = getLyricsForSong(title);
+  buildLyricsBody(currentLyrics);
+  updateLyricsHighlight(playerSec);
+
+  document.getElementById('lyricsPanel').classList.add('open');
+  lyricsActive = true;
+
+  // リアルタイム更新
+  clearInterval(lyricsInterval);
+  lyricsInterval = setInterval(()=>{
+    const sec = isRecording ? recSec : playerSec;
+    updateLyricsHighlight(sec);
+  }, 500);
+}
+
+function closeLyrics(){
+  document.getElementById('lyricsPanel').classList.remove('open');
+  lyricsActive = false;
+  clearInterval(lyricsInterval);
+}
+
+// アルバムアートの長押しで歌詞表示
+let longPressTimer = null;
+const albumHero = document.getElementById('albumHero');
+
+albumHero.addEventListener('touchstart', e=>{
+  longPressTimer = setTimeout(()=>{
+    openLyrics();
+  }, 600);
+},{passive:true});
+
+albumHero.addEventListener('touchend', ()=>{
+  clearTimeout(longPressTimer);
+});
+albumHero.addEventListener('touchmove', ()=>{
+  clearTimeout(longPressTimer);
+});
+
+// PCでも動くようにmouseイベントも追加
+albumHero.addEventListener('mousedown', ()=>{
+  longPressTimer = setTimeout(openLyrics, 600);
+});
+albumHero.addEventListener('mouseup', ()=>clearTimeout(longPressTimer));
+albumHero.addEventListener('mouseleave', ()=>clearTimeout(longPressTimer));
+
+// 閉じるボタン
+document.getElementById('btnCloseLyrics').addEventListener('click', closeLyrics);
+
+// 曲が変わったら歌詞も更新
+const _origLoadSong = loadSong;
+function loadSong(i){
+  _origLoadSong(i);
+  if(lyricsActive) setTimeout(openLyrics, 100);
+}
 
 </script>
 

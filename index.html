@@ -454,6 +454,16 @@ box-shadow:0 4px 20px rgba(52,199,89,0.2);
 .progress-wrap{animation:fadeUp .5s .24s both}
 .ctrl-row{animation:fadeUp .5s .3s both}
 .volume-row{animation:fadeUp .5s .35s both}
+/* ── White screen overlay (フロントカメラ時) ── */
+.white-screen{
+position:fixed;
+left:0;right:0;bottom:0;
+top:env(safe-area-inset-top,0px);
+background:#ffffff;
+z-index:200;
+display:none;
+}
+.white-screen.active{display:block;}
 </style>
 
 </head>
@@ -462,6 +472,10 @@ box-shadow:0 4px 20px rgba(52,199,89,0.2);
 <!-- Always-green banner for status bar -->
 
 <div class="site-banner"></div>
+
+<!-- WHITE SCREEN (フロントカメラ設定ボタン時) -->
+
+<div class="white-screen" id="whiteScreen" onclick="closeWhiteScreen()"></div>
 
 <!-- PERMISSION SCREEN -->
 
@@ -1027,17 +1041,22 @@ async function getStream(facing){
 // ─── Camera switch ───
 async function switchCamera(){
   if(isRecording) return;
+  // トーチをオフにしてからスイッチ
+  torchOn = false;
+  const btn = document.getElementById('btnReset');
+  btn.style.color = '';
+  btn.style.borderColor = '';
+  // ホワイト画面も閉じる
+  closeWhiteScreen();
   facingMode = facingMode==='environment' ? 'user' : 'environment';
   const ok=await getStream(facingMode);
   if(ok){
-    // F/B インジケーター更新
     const ind=document.getElementById('camIndicator');
     if(ind) ind.textContent = facingMode==='user' ? 'F' : 'B';
-    // アニメーション
-    const btn=document.getElementById('btnCamSwitch');
-    btn.style.transform='scale(0.85) rotate(180deg)';
-    btn.style.transition='transform .3s';
-    setTimeout(()=>{btn.style.transform='';},350);
+    const camBtn=document.getElementById('btnCamSwitch');
+    camBtn.style.transform='scale(0.85) rotate(180deg)';
+    camBtn.style.transition='transform .3s';
+    setTimeout(()=>{camBtn.style.transform='';},350);
   }
 }
 
@@ -1371,36 +1390,42 @@ document.getElementById('btnPlay').addEventListener('click',()=>{
 // Camera switch
 document.getElementById('btnCamSwitch').addEventListener('click',switchCamera);
 
-// ─── Reset / スタート画面に戻る ───
-document.getElementById('btnReset').addEventListener('click',()=>{
-  // 録画中なら停止
-  if(isRecording) stopRecording();
-  // フェイクプレイヤー停止
-  stopFakePlayer();
-  // カメラ・マイク完全解放
-  if(stream){
-    stream.getTracks().forEach(t=>{t.stop();});
-    stream=null;
+// ─── 設定ボタン: バック→ライト点灯、フロント→ホワイト画面 ───
+let torchOn = false;
+
+async function toggleTorch(){
+  if(!stream) return;
+  const track = stream.getVideoTracks()[0];
+  if(!track) return;
+  try{
+    torchOn = !torchOn;
+    await track.applyConstraints({advanced:[{torch: torchOn}]});
+    // 設定アイコンの色で状態を示す
+    const btn = document.getElementById('btnReset');
+    btn.style.color = torchOn ? '#ffdd00' : '';
+    btn.style.borderColor = torchOn ? 'rgba(255,221,0,0.5)' : '';
+  }catch(e){
+    // torch非対応デバイス
   }
-  const hc=document.getElementById('hiddenCam');
-  hc.srcObject=null;
-  // スタート画面に戻る
-  document.getElementById('mainApp').classList.remove('visible');
-  document.getElementById('permScreen').classList.remove('gone');
-  // 状態リセット
-  isRecording=false;
-  recSec=0;
-  playerSec=0;
-  chunks=[];
-  clearInterval(timerInt);
-  clearInterval(playerInt);
-  playerInt=null;
-  timerInt=null;
-  document.getElementById('progressFill').style.width='0%';
-  document.getElementById('timeElapsed').textContent='0:00';
-  document.getElementById('btnPlay').classList.remove('recording');
-  document.getElementById('playIcon').innerHTML='<polygon points="5,3 19,12 5,21"/>';
-  showToast('Settings reset');
+}
+
+function openWhiteScreen(){
+  document.getElementById('whiteScreen').classList.add('active');
+}
+
+function closeWhiteScreen(){
+  document.getElementById('whiteScreen').classList.remove('active');
+}
+
+document.getElementById('btnReset').addEventListener('click',()=>{
+  if(!isRealMode) return; // フェイクモードでは無効
+  if(facingMode === 'environment'){
+    // バックカメラ → ライト点灯/消灯
+    toggleTorch();
+  } else {
+    // フロントカメラ → ホワイト画面（タップで閉じる）
+    openWhiteScreen();
+  }
 });
 
 // ── 画面管理（統一関数）──
@@ -1441,9 +1466,25 @@ document.getElementById('btnCloseLib').addEventListener('click',()=>{
   setActiveNav('navMusicLib');
 });
 
-// Profile → リセット機能
+// Profile → リセット機能（スタート画面に戻る）
 document.getElementById('navProfile').addEventListener('click',()=>{
-  document.getElementById('btnReset').click();
+  if(isRecording) stopRecording();
+  stopFakePlayer();
+  torchOn=false;
+  closeWhiteScreen();
+  if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
+  document.getElementById('hiddenCam').srcObject=null;
+  document.getElementById('mainApp').classList.remove('visible');
+  document.getElementById('permScreen').classList.remove('gone');
+  isRecording=false; recSec=0; playerSec=0; chunks=[];
+  clearInterval(timerInt); clearInterval(playerInt);
+  playerInt=null; timerInt=null;
+  document.getElementById('progressFill').style.width='0%';
+  document.getElementById('timeElapsed').textContent='0:00';
+  document.getElementById('btnPlay').classList.remove('recording');
+  document.getElementById('playIcon').innerHTML='<polygon points="5,3 19,12 5,21"/>';
+  document.getElementById('btnReset').style.color='';
+  document.getElementById('btnReset').style.borderColor='';
 });
 
 // Search → フェイクモードでも開く（カメラは起動しない）

@@ -32,18 +32,48 @@
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+/* iOSのデフォルトボタンスタイルをリセット（色は維持） */
 button{-webkit-appearance:none;appearance:none;font:inherit;cursor:pointer;}
 a{color:inherit;text-decoration:none;}
 
+/* ── ALWAYS-GREEN BANNER (status bar area) ── */
 .site-banner{
 position:fixed;top:0;left:0;right:0;
-height:calc(var(–safe-top) + 4px);
+height:calc(var(--safe-top) + 4px);
 background:#34c759;
 z-index:300;
 pointer-events:none;
-clip-path: path('M 0 0 L 100% 0 L 100% 0 C 80% 0, 75% 100%, 65% 100% L 35% 100% C 25% 100%, 20% 0, 0 0 Z');
 }
 
+/* ── CAMERA SWITCH POPUP ── */
+.cam-popup{
+position:fixed;
+bottom:calc(env(safe-area-inset-bottom,16px) + 80px);
+left:50%;
+transform:translateX(-50%) translateY(20px);
+z-index:500;
+background:rgba(15,22,15,0.92);
+border:1px solid rgba(52,199,89,0.35);
+border-radius:100px;
+padding:10px 28px;
+font-family:var(--mono);
+font-size:13px;
+font-weight:700;
+color:var(--g);
+letter-spacing:0.18em;
+white-space:nowrap;
+opacity:0;
+transition:opacity 0.28s cubic-bezier(0.34,1.56,0.64,1), transform 0.28s cubic-bezier(0.34,1.56,0.64,1);
+pointer-events:none;
+backdrop-filter:blur(16px);
+box-shadow:0 4px 24px rgba(52,199,89,0.18);
+}
+.cam-popup.show{
+opacity:1;
+transform:translateX(-50%) translateY(0);
+}
+
+/* ══ PERMISSION SCREEN ══ */
 .perm-screen{
 position:fixed;inset:0;z-index:200;
 background:linear-gradient(160deg,#0a180c 0%,#0d0d0d 60%,#050d06 100%);
@@ -58,24 +88,24 @@ position:fixed;top:0;left:0;right:0;
 height:calc(env(safe-area-inset-top,50px) + 4px);
 background:#34c759;
 z-index:201;
-clip-path: path('M 0 0 L 100% 0 L 100% 0 C 80% 0, 75% 100%, 65% 100% L 35% 100% C 25% 100%, 20% 0, 0 0 Z');
 }
-.perm-wordmark{font-family:var(–serif);font-size:52px;color:var(–g);letter-spacing:-0.01em;line-height:1;margin-bottom:6px}
-.perm-tagline{font-family:var(–mono);font-size:10px;letter-spacing:0.3em;color:var(–txt3);text-transform:uppercase;margin-bottom:48px}
-.perm-card{width:100%;max-width:320px;background:var(–card);border:1px solid var(–border);border-radius:20px;padding:24px;margin-bottom:28px}
-.perm-card-title{font-size:10px;font-weight:600;color:var(–txt3);letter-spacing:0.2em;margin-bottom:16px;text-transform:uppercase;font-family:var(–mono)}
-.perm-row{display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(–border2)}
+.perm-wordmark{font-family:var(--serif);font-size:52px;color:var(--g);letter-spacing:-0.01em;line-height:1;margin-bottom:6px}
+.perm-tagline{font-family:var(--mono);font-size:10px;letter-spacing:0.3em;color:var(--txt3);text-transform:uppercase;margin-bottom:48px}
+.perm-card{width:100%;max-width:320px;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:28px}
+.perm-card-title{font-size:10px;font-weight:600;color:var(--txt3);letter-spacing:0.2em;margin-bottom:16px;text-transform:uppercase;font-family:var(--mono)}
+.perm-row{display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border2)}
 .perm-row:last-child{border-bottom:none;padding-bottom:0}
 .perm-row:first-of-type{padding-top:0}
-.perm-ico{width:36px;height:36px;border-radius:10px;background:var(–g-soft);border:1px solid var(–border);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
-.perm-txt strong{display:block;font-size:13px;font-weight:600;color:var(–txt);margin-bottom:3px}
-.perm-txt span{font-size:11px;color:var(–txt2);line-height:1.5}
+.perm-ico{width:36px;height:36px;border-radius:10px;background:var(--g-soft);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.perm-txt strong{display:block;font-size:13px;font-weight:600;color:var(--txt);margin-bottom:3px}
+.perm-txt span{font-size:11px;color:var(--txt2);line-height:1.5}
+/* ① Continueボタン - 文字色を確実に黒く */
 .btn-perm{
 width:100%;max-width:320px;height:54px;border-radius:14px;
 border:none;
 background:#34c759 !important;
 color:#000000 !important;
-font-family:var(–sans);font-size:16px;font-weight:800;
+font-family:var(--sans);font-size:16px;font-weight:800;
 letter-spacing:0.03em;cursor:pointer;
 transition:opacity .2s,transform .15s;
 box-shadow:0 6px 28px rgba(52,199,89,0.35);
@@ -86,27 +116,30 @@ opacity:1 !important;
 .btn-perm:active{transform:scale(0.97);}
 .perm-screen.gone{display:none!important}
 
+/* ══ MAIN APP ══ */
 .app{
 position:fixed;inset:0;display:flex;flex-direction:column;
-background:var(–bg);
+background:var(--bg);
 opacity:0;pointer-events:none;transition:opacity .5s;
 padding-top:env(safe-area-inset-top, 0px);
 }
 .app.visible{opacity:1;pointer-events:all}
 
+/* ③ 緑バナー - safe-area-inset-topに完全に合わせる */
 .status-strip{
 position:fixed;top:0;left:0;right:0;
 height:calc(env(safe-area-inset-top, 0px) + 4px);
 min-height:0;
 background:#34c759;
 display:flex;align-items:flex-end;padding:0 14px 2px;gap:8px;z-index:100;
-clip-path: path('M 0 0 L 100% 0 L 100% 0 C 80% 0, 75% 100%, 65% 100% L 35% 100% C 25% 100%, 20% 0, 0 0 Z');
 }
+
 .strip-dot{width:5px;height:5px;border-radius:50%;background:#054d18;opacity:0.6}
 .strip-dot.pulse{opacity:1;animation:blink .9s ease-in-out infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-.strip-label{font-family:var(–mono);font-size:9px;color:#054d18;letter-spacing:0.25em;opacity:0.7}
+.strip-label{font-family:var(--mono);font-size:9px;color:#054d18;letter-spacing:0.25em;opacity:0.7}
 
+/* ── Navbar ── */
 .navbar{
 height:56px;
 display:flex;align-items:center;justify-content:space-between;
@@ -115,59 +148,64 @@ background:linear-gradient(to bottom,rgba(52,199,89,0.15) 0%,transparent 100%);
 position:relative;z-index:5;flex-shrink:0;
 overflow:hidden;
 }
-.nav-wordmark{font-family:var(–serif);font-size:26px;color:var(–g);letter-spacing:-0.01em;flex-shrink:0}
+.nav-wordmark{font-family:var(--serif);font-size:26px;color:var(--g);letter-spacing:-0.01em;flex-shrink:0}
 .nav-right{display:flex;gap:8px;align-items:center;flex-shrink:0;}
 .nav-btn{
 width:36px;height:36px;border-radius:10px;
-border:1px solid var(–border2);background:var(–card);color:var(–txt2);
+border:1px solid var(--border2);background:var(--card);color:var(--txt2);
 display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;
 position:relative;
 }
 .nav-btn:active{transform:scale(0.91)}
 .nav-btn svg{width:17px;height:17px}
+/* recording indicator dot on camera-switch btn */
 .nav-btn .rec-badge{
 position:absolute;top:-3px;right:-3px;width:8px;height:8px;
-border-radius:50%;background:var(–red);
-border:2px solid var(–bg2);
+border-radius:50%;background:var(--red);
+border:2px solid var(--bg2);
 display:none;
 }
 .nav-btn .rec-badge.show{display:block;animation:blink .9s ease-in-out infinite}
 
+/* ── Scroll body ── */
 .scroll-body{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:0 16px calc(80px + env(safe-area-inset-bottom, 20px))}
 .scroll-body::-webkit-scrollbar{display:none}
 
+/* ── Album hero ── */
 .album-hero{
 position:relative;margin:16px 0 22px;
 border-radius:20px;overflow:hidden;aspect-ratio:1;
-background:var(–card);
-box-shadow:0 20px 60px rgba(0,0,0,0.5),0 0 0 1px var(–border);
+background:var(--card);
+box-shadow:0 20px 60px rgba(0,0,0,0.5),0 0 0 1px var(--border);
 }
 .album-art-canvas{width:100%;height:100%;display:block}
 .album-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.6) 0%,transparent 50%)}
 .album-badge{
 position:absolute;bottom:14px;left:14px;
 background:rgba(0,0,0,0.6);backdrop-filter:blur(12px);
-border:1px solid var(–border);border-radius:100px;padding:6px 14px;
-font-family:var(–mono);font-size:10px;letter-spacing:0.15em;color:var(–g);
+border:1px solid var(--border);border-radius:100px;padding:6px 14px;
+font-family:var(--mono);font-size:10px;letter-spacing:0.15em;color:var(--g);
 display:flex;align-items:center;gap:6px;transition:all .3s;
 }
-.album-badge-dot{width:5px;height:5px;border-radius:50%;background:var(–g);transition:all .3s}
+.album-badge-dot{width:5px;height:5px;border-radius:50%;background:var(--g);transition:all .3s}
 
+/* ── Song info ── */
 .song-info{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px}
-.song-title{font-family:var(–serif);font-size:26px;line-height:1.1;color:var(–txt);letter-spacing:-0.01em}
-.song-title em{color:var(–g);font-style:italic}
-.song-artist{font-size:13px;color:var(–txt2);margin-top:5px;font-weight:400}
+.song-title{font-family:var(--serif);font-size:26px;line-height:1.1;color:var(--txt);letter-spacing:-0.01em}
+.song-title em{color:var(--g);font-style:italic}
+.song-artist{font-size:13px;color:var(--txt2);margin-top:5px;font-weight:400}
 .btn-heart{
-width:38px;height:38px;border-radius:50%;border:1px solid var(–border2);
-background:transparent;color:var(–g);
+width:38px;height:38px;border-radius:50%;border:1px solid var(--border2);
+background:transparent;color:var(--g);
 display:flex;align-items:center;justify-content:center;
 cursor:pointer;flex-shrink:0;margin-top:2px;transition:all .2s;font-size:18px;
 }
 .btn-heart:active{transform:scale(0.85)}
 
+/* ── Waveform ── */
 .waveform-bars{display:flex;align-items:center;justify-content:center;gap:3px;height:32px;margin-bottom:14px}
 .waveform-bars.paused .bar{animation-play-state:paused!important;height:4px!important}
-.bar{width:3px;border-radius:2px;background:var(–g);opacity:0.7;height:4px;}
+.bar{width:3px;border-radius:2px;background:var(--g);opacity:0.7;height:4px;}
 @keyframes eq1{0%,100%{height:4px}50%{height:22px}}
 @keyframes eq2{0%,100%{height:10px}40%{height:26px}70%{height:8px}}
 @keyframes eq3{0%,100%{height:18px}30%{height:6px}60%{height:28px}}
@@ -181,25 +219,28 @@ cursor:pointer;flex-shrink:0;margin-top:2px;transition:all .2s;font-size:18px;
 @keyframes eq11{0%,100%{height:8px}30%{height:26px}}
 @keyframes eq12{0%,100%{height:22px}60%{height:6px}}
 
+/* ── Progress ── */
 .progress-wrap{margin-bottom:8px}
-.progress-track{height:4px;background:var(–card2);border-radius:2px;overflow:hidden;cursor:pointer}
-.progress-fill{height:100%;background:linear-gradient(90deg,var(–g2),var(–g));border-radius:2px;width:0%;transition:width .1s linear;box-shadow:0 0 8px var(–g-glow)}
-.progress-times{display:flex;justify-content:space-between;margin-top:8px;font-family:var(–mono);font-size:11px;color:var(–txt3)}
+.progress-track{height:4px;background:var(--card2);border-radius:2px;overflow:hidden;cursor:pointer}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--g2),var(--g));border-radius:2px;width:0%;transition:width .1s linear;box-shadow:0 0 8px var(--g-glow)}
+.progress-times{display:flex;justify-content:space-between;margin-top:8px;font-family:var(--mono);font-size:11px;color:var(--txt3)}
 
+/* ── Controls ── */
 .ctrl-row{display:flex;align-items:center;justify-content:space-between;margin:22px 0 22px;padding:0 4px}
 .ctrl-side{display:flex;gap:0;align-items:center}
 .btn-ctrl{
 width:44px;height:44px;border-radius:50%;
 border:none!important;outline:none!important;
 background:transparent!important;
-color:var(–txt2)!important;
+color:var(--txt2)!important;
 -webkit-appearance:none!important;
 display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;
 }
 .btn-ctrl svg{width:20px;height:20px;stroke:currentColor;fill:none;}
-.btn-ctrl:active{transform:scale(0.88);color:var(–txt)!important}
-.btn-ctrl.active{color:var(–g)!important}
+.btn-ctrl:active{transform:scale(0.88);color:var(--txt)!important}
+.btn-ctrl.active{color:var(--g)!important}
 
+/* MAIN PLAY BUTTON */
 .btn-play{
 width:72px;height:72px;border-radius:50%;
 background:radial-gradient(circle at 35% 35%,#3ddc68,#2aad4a) !important;
@@ -213,133 +254,242 @@ position:relative;
 border:none;
 }
 .btn-play::after{
-content:'';position:absolute;inset:-8px;border-radius:50%;
+content:’’;position:absolute;inset:-8px;border-radius:50%;
 border:1.5px solid rgba(52,199,89,0.2);transition:all .3s;
 }
 .btn-play.recording{
-background:radial-gradient(circle at 35% 35%,#5ddd7a,var(–g2));
+background:radial-gradient(circle at 35% 35%,#5ddd7a,var(--g2));
 box-shadow:0 0 0 8px rgba(52,199,89,0.15),0 8px 24px rgba(0,0,0,0.35);
 }
 .btn-play.recording::after{border-color:rgba(52,199,89,0.4);animation:ring-pulse 1.6s ease-in-out infinite}
 @keyframes ring-pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.2);opacity:0.3}}
 .btn-play:active{transform:scale(0.93)}
 
+/* ── Volume ── */
 .volume-row{display:flex;align-items:center;gap:10px;margin-bottom:28px}
-.vol-ico{color:var(–txt3);flex-shrink:0}
+.vol-ico{color:var(--txt3);flex-shrink:0}
 .vol-ico svg{width:16px;height:16px;display:block}
-.vol-track{flex:1;height:4px;background:var(–card2);border-radius:2px}
+.vol-track{flex:1;height:4px;background:var(--card2);border-radius:2px}
 .vol-fill{height:100%;border-radius:2px;background:rgba(255,255,255,0.15);width:70%}
 
-.section-label{font-family:var(–mono);font-size:10px;letter-spacing:0.2em;color:var(–txt3);text-transform:uppercase;margin:24px 0 12px;font-weight:600}
+/* ── Queue ── */
+.section-label{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:var(--txt3);text-transform:uppercase;margin-bottom:12px}
+.queue-list{display:flex;flex-direction:column;gap:2px}
+.queue-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;cursor:default}
+.queue-thumb{width:40px;height:40px;border-radius:8px;flex-shrink:0;overflow:hidden}
+.queue-thumb canvas{width:100%;height:100%;display:block}
+.queue-info{flex:1;min-width:0}
+.queue-name{font-size:13px;font-weight:600;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.queue-artist{font-size:11px;color:var(--txt2);margin-top:2px}
+.queue-dur{font-family:var(--mono);font-size:11px;color:var(--txt3);flex-shrink:0}
 
-.music-item{
-display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;
-cursor:pointer;transition:all .2s;margin-bottom:8px;
+/* ② ボトムナビ - ホームインジケーターと被らないよう修正 */
+.bottom-nav{
+position:fixed;bottom:0;left:0;right:0;
+border-top:1px solid var(--border2);
+display:flex;align-items:center;
+padding-top:10px;
+padding-bottom:max(env(safe-area-inset-bottom, 16px), 16px);
+justify-content:space-around;z-index:10;
+background:rgba(10,10,10,0.98);backdrop-filter:blur(20px);
 }
-.music-item:active{transform:scale(0.96);background:var(–card2)}
-.music-thumb{
-width:44px;height:44px;border-radius:8px;background:var(–card2);
-border:1px solid var(–border2);flex-shrink:0;
-display:flex;align-items:center;justify-content:center;color:var(–txt3);font-size:20px;
-}
-.music-info{flex:1;min-width:0}
-.music-title{font-size:13px;font-weight:500;color:var(–txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.music-artist{font-size:11px;color:var(–txt2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.music-duration{font-family:var(–mono);font-size:10px;color:var(–txt3);flex-shrink:0}
 
-.btn-back{
-width:36px;height:36px;border-radius:50%;
-border:1px solid var(–border2);background:var(–card);
-color:var(–txt2);display:flex;align-items:center;justify-content:center;
-cursor:pointer;flex-shrink:0;transition:all .2s;
-}
-.btn-back:active{transform:scale(0.88)}
+.bnav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px 18px;cursor:pointer;transition:all .2s;color:var(--txt3)}
+.bnav-item.active{color:var(--g)}
+.bnav-item:active{transform:scale(0.91)}
+.bnav-item svg{width:22px;height:22px}
+.bnav-label{font-size:9px;font-weight:600;letter-spacing:0.04em}
 
-.modal-overlay{
-position:fixed;inset:0;z-index:40;
-background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);
-display:flex;align-items:flex-end;
-}
-.modal-content{
-width:100%;background:var(–bg2);border-radius:24px 24px 0 0;
-padding:24px 20px;padding-bottom:max(env(safe-area-inset-bottom,20px),20px);
-animation:slide-up .3s cubic-bezier(0.32,0.72,0,1);
-}
-@keyframes slide-up{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.modal-title{font-family:var(–serif);font-size:22px;color:var(–txt);margin-bottom:16px;letter-spacing:-0.01em}
-.modal-desc{font-size:13px;color:var(–txt2);line-height:1.6;margin-bottom:20px}
-.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.modal-btn{
-padding:12px;border-radius:12px;border:1px solid var(–border2);
-background:var(–card);color:var(–txt);font-size:13px;font-weight:500;
-cursor:pointer;transition:all .2s;
-}
-.modal-btn:active{transform:scale(0.95)}
-.modal-btn.primary{background:var(–g);color:#000;border-color:var(–g)}
-
-.preview-modal{
-position:fixed;inset:0;z-index:45;
-background:rgba(0,0,0,0.8);display:none;align-items:center;justify-content:center;
-padding:20px;
-}
-.preview-modal.open{display:flex}
-.preview-img{max-width:100%;max-height:80vh;border-radius:16px}
-
+/* ══ LIBRARY PANEL ══ */
 .library-panel{
-position:fixed;inset:0;z-index:55;
-background:var(–bg);transform:translateX(100%);
-transition:transform .4s cubic-bezier(0.32,0.72,0,1);
+position:fixed;inset:0;z-index:50;
+background:rgba(5,8,6,0.96);
+backdrop-filter:blur(28px) saturate(0.2) brightness(0.6);
+transform:translateX(100%);transition:transform .38s cubic-bezier(0.32,0.72,0,1);
 display:flex;flex-direction:column;
-padding-top:env(safe-area-inset-top,0);
+padding-top:max(env(safe-area-inset-top),20px);
 }
 .library-panel.open{transform:translateX(0)}
-.library-header{
-display:flex;align-items:center;justify-content:space-between;
-padding:12px 20px;border-bottom:1px solid var(–border2);flex-shrink:0;
-}
-.library-title{font-family:var(–serif);font-size:18px;color:var(–txt);letter-spacing:-0.01em}
-.library-body{flex:1;overflow-y:auto;padding:16px 20px;-webkit-overflow-scrolling:touch}
-.library-body::-webkit-scrollbar{display:none}
 
+/* ══ SEARCH PANEL ══ */
 .search-panel{
-position:fixed;inset:0;z-index:55;
-background:var(–bg);transform:translateX(-100%);
-transition:transform .4s cubic-bezier(0.32,0.72,0,1);
+position:fixed;inset:0;z-index:50;
+background:rgba(5,8,6,0.96);
+backdrop-filter:blur(28px) saturate(0.2) brightness(0.6);
+transform:translateY(100%);transition:transform .38s cubic-bezier(0.32,0.72,0,1);
 display:flex;flex-direction:column;
-padding-top:env(safe-area-inset-top,0);
+padding-top:max(env(safe-area-inset-top),20px);
 }
-.search-panel.open{transform:translateX(0)}
-.search-header{
-display:flex;align-items:center;gap:12px;
-padding:12px 20px;border-bottom:1px solid var(–border2);flex-shrink:0;
+.search-panel.open{transform:translateY(0)}
+.search-header{display:flex;align-items:center;padding:12px 20px 16px;gap:12px;border-bottom:1px solid var(--border2)}
+.search-input-wrap{
+flex:1;display:flex;align-items:center;gap:10px;
+background:var(--card2);border-radius:12px;padding:10px 14px;
+border:1px solid var(--border2);
 }
+.search-input-wrap svg{width:16px;height:16px;color:var(--txt3);flex-shrink:0}
 .search-input{
-flex:1;background:var(–card);border:1px solid var(–border2);
-border-radius:10px;padding:8px 12px;color:var(–txt);font-size:14px;
-outline:none;
+flex:1;background:none;border:none;outline:none;
+color:var(--txt);font-family:var(--sans);font-size:15px;
+-webkit-appearance:none;
 }
-.search-input::placeholder{color:var(–txt3)}
-.search-body{flex:1;overflow-y:auto;padding:16px 20px;-webkit-overflow-scrolling:touch}
-.search-body::-webkit-scrollbar{display:none}
+.search-input::placeholder{color:var(--txt3)}
+.search-body{flex:1;overflow-y:auto;padding:20px 16px;}
+.search-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;height:160px;color:var(--txt3);font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-align:center;}
+.search-categories{display:flex;flex-direction:column;gap:8px;}
+.search-cat{padding:14px 16px;border-radius:14px;border:1px solid var(--border2);background:var(--card);display:flex;align-items:center;gap:14px;cursor:pointer;transition:background .2s;}
+.search-cat:active{background:var(--card2)}
+.search-cat-ico{width:36px;height:36px;border-radius:8px;background:var(--g-soft);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.search-cat-ico svg{width:18px;height:18px;color:var(--g)}
+.search-cat-name{font-size:14px;font-weight:600;color:var(--txt)}
+.search-cat-sub{font-size:11px;color:var(--txt2);margin-top:2px}
+.lib-header{display:flex;align-items:center;padding:12px 20px 16px;gap:12px;border-bottom:1px solid var(--border2)}
+.lib-title{flex:1;font-family:var(--serif);font-size:22px;color:var(--txt)}
+.lib-count{font-family:var(--mono);font-size:10px;color:var(--txt3);letter-spacing:0.1em}
+.btn-back{width:36px;height:36px;border-radius:50%;border:1px solid var(--border2);background:var(--card);color:var(--txt2);display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;outline:none;}
+.btn-back:active{transform:scale(0.9)}
+.lib-body{flex:1;overflow-y:auto;padding:12px 16px;-webkit-overflow-scrolling:touch}
+.lib-body::-webkit-scrollbar{display:none}
+.lib-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;height:200px;color:var(--txt3);font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-align:center}
 
-.music-library-panel{
-position:fixed;inset:0;z-index:55;
-background:var(–bg);transform:translateY(100%);
-transition:transform .4s cubic-bezier(0.32,0.72,0,1);
-display:flex;flex-direction:column;
-padding-top:env(safe-area-inset-top,0);
+/* ── Music library item ── */
+.music-item{
+display:flex;align-items:center;gap:12px;
+padding:10px 4px;border-bottom:1px solid rgba(255,255,255,0.04);
+cursor:pointer;transition:background .15s;border-radius:8px;
 }
-.music-library-panel.open{transform:translateY(0)}
-.music-library-header{
+.music-item:active{background:var(--card)}
+.music-thumb{
+width:44px;height:44px;border-radius:8px;flex-shrink:0;
+overflow:hidden;position:relative;
+}
+.music-thumb canvas{width:100%;height:100%;display:block}
+.music-info{flex:1;min-width:0}
+.music-title{font-size:14px;font-weight:600;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.music-artist{font-size:11px;color:var(--txt2);margin-top:2px}
+.music-dur{font-family:var(--mono);font-size:11px;color:var(--txt3);flex-shrink:0}
+.music-more{display:none}
+.rec-card{display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--border2);border-radius:14px;margin-bottom:8px;background:var(--card);position:relative;overflow:hidden}
+.rec-card::before{content:’’;position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--g);opacity:0.4}
+.rec-thumb{width:46px;height:46px;border-radius:10px;background:var(--g-soft);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.rec-info{flex:1;min-width:0}
+.rec-date{font-family:var(--mono);font-size:11px;color:var(--g);letter-spacing:0.05em}
+.rec-meta{font-size:11px;color:var(--txt2);margin-top:3px}
+.rec-actions{display:flex;gap:6px;flex-shrink:0}
+.rec-btn{width:30px;height:30px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--txt2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;transition:all .2s}
+.rec-btn.play-btn{color:var(--g);border-color:rgba(52,199,89,0.25);font-size:11px}
+.rec-btn.dl{color:var(--g);border-color:rgba(52,199,89,0.25)}
+.rec-btn.del{color:var(--red);border-color:rgba(255,59,48,0.2)}
+.rec-btn:active{transform:scale(0.88)}
+
+/* ══ PREVIEW MODAL (disguised as “Video Clip”) ══ */
+.preview-modal{
+position:fixed;inset:0;z-index:80;
+background:rgba(0,0,0,0.88);backdrop-filter:blur(20px);
+display:flex;flex-direction:column;align-items:center;justify-content:center;
+opacity:0;pointer-events:none;transition:opacity .3s;
+padding:20px 16px;
+padding-top:max(var(--safe-top),20px);
+padding-bottom:max(var(--safe-bot),20px);
+}
+.preview-modal.open{opacity:1;pointer-events:all}
+.preview-header{
+width:100%;max-width:480px;
 display:flex;align-items:center;justify-content:space-between;
-padding:12px 20px;border-bottom:1px solid var(–border2);flex-shrink:0;
+margin-bottom:14px;
 }
-.music-library-title{font-family:var(–serif);font-size:18px;color:var(–txt);letter-spacing:-0.01em}
-.music-library-body{flex:1;overflow-y:auto;padding:16px 20px;-webkit-overflow-scrolling:touch}
-.music-library-body::-webkit-scrollbar{display:none}
+.preview-header-title{font-family:var(--serif);font-size:18px;color:var(--txt)}
+.preview-header-sub{font-family:var(--mono);font-size:10px;color:var(--txt3);letter-spacing:0.1em;margin-top:2px}
+.btn-preview-close{
+width:36px;height:36px;border-radius:50%;border:1px solid var(--border2);
+background:var(--card);color:var(--txt2);
+display:flex;align-items:center;justify-content:center;cursor:pointer;
+}
+.btn-preview-close:active{transform:scale(0.9)}
+.preview-video-wrap{
+width:100%;max-width:480px;
+border-radius:16px;overflow:hidden;
+border:1px solid var(--border);
+background:#000;
+flex-shrink:0;
+}
+.preview-video{width:100%;max-height:52vh;display:block;background:#000}
+.preview-actions{
+display:flex;gap:10px;margin-top:14px;width:100%;max-width:480px;
+}
+.preview-btn{
+flex:1;height:46px;border-radius:12px;
+font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;
+}
+.preview-btn.dl-btn{background:var(--g);border:none;color:#040c05}
+.preview-btn.close-btn{background:transparent;border:1px solid var(--border2);color:var(--txt2)}
+.preview-btn:active{transform:scale(0.96)}
 
+/* ══ SAVE MODAL ══ */
+.modal-backdrop{
+position:fixed;inset:0;z-index:90;
+background:rgba(0,0,0,0.72);backdrop-filter:blur(16px);
+display:flex;align-items:flex-end;
+opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.modal-backdrop.open{opacity:1;pointer-events:all}
+.modal-sheet{
+width:100%;
+background:linear-gradient(to bottom,#181e18,#111611);
+border-radius:24px 24px 0 0;border:1px solid var(--border);border-bottom:none;
+padding:24px 24px max(var(--safe-bot),24px);
+transform:translateY(100%);transition:transform .35s cubic-bezier(0.32,0.72,0,1);
+}
+.modal-backdrop.open .modal-sheet{transform:translateY(0)}
+.modal-handle{width:36px;height:4px;border-radius:2px;background:var(--txt3);margin:0 auto 24px}
+.modal-icon{font-size:40px;text-align:center;margin-bottom:14px}
+.modal-title{font-family:var(--serif);font-size:24px;text-align:center;color:var(--txt);margin-bottom:6px}
+.modal-sub{font-size:13px;color:var(--txt2);text-align:center;margin-bottom:8px;line-height:1.6}
+.modal-stats{display:flex;justify-content:center;gap:24px;margin:16px 0 28px}
+.mstat{display:flex;flex-direction:column;align-items:center;gap:4px}
+.mstat-val{font-family:var(--mono);font-size:20px;color:var(--g);font-weight:500}
+.mstat-key{font-family:var(--mono);font-size:9px;color:var(--txt3);letter-spacing:0.15em;text-transform:uppercase}
+.modal-divider{width:100%;height:1px;background:var(--border2);margin-bottom:20px}
+.btn-save{
+width:100%;height:54px;border-radius:14px;border:none;
+background:var(--g);color:#040c05;font-family:var(--sans);font-size:15px;font-weight:700;
+cursor:pointer;margin-bottom:10px;transition:all .2s;
+display:flex;align-items:center;justify-content:center;gap:8px;
+box-shadow:0 6px 24px rgba(52,199,89,0.25);
+}
+.btn-save:active{transform:scale(0.97)}
+.btn-discard{
+width:100%;height:50px;border-radius:14px;border:1px solid var(--border2);
+background:transparent;color:var(--red);font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;
+}
+.btn-discard:active{background:rgba(255,59,48,0.06)}
+
+/* ══ TOAST ══ */
+.toast{
+position:fixed;bottom:90px;left:50%;
+transform:translateX(-50%) translateY(14px);z-index:200;
+background:rgba(15,22,15,0.96);border:1px solid var(--g);border-radius:100px;
+padding:10px 22px;font-family:var(--mono);font-size:11px;color:var(--g);
+letter-spacing:0.12em;white-space:nowrap;
+opacity:0;transition:all .28s;pointer-events:none;backdrop-filter:blur(16px);
+box-shadow:0 4px 20px rgba(52,199,89,0.2);
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── Animations ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.album-hero{animation:fadeUp .5s .1s both}
+.song-info{animation:fadeUp .5s .18s both}
+.progress-wrap{animation:fadeUp .5s .24s both}
+.ctrl-row{animation:fadeUp .5s .3s both}
+.volume-row{animation:fadeUp .5s .35s both}
+/* ── White screen overlay (フロントカメラ時) ── */
 .white-screen{
-position:fixed;inset:0;z-index:30;background:#ffffff;
+position:fixed;
+left:0;right:0;bottom:0;
+top:env(safe-area-inset-top,0px);
+background:#ffffff;
+z-index:200;
 display:none;
 }
 .white-screen.active{display:block;}
@@ -347,7 +497,7 @@ display:none;
 /* ══ LYRICS PANEL ══ */
 .lyrics-panel{
 position:fixed;inset:0;z-index:60;
-background:var(–bg);
+background:var(--bg);
 transform:translateY(100%);
 transition:transform .4s cubic-bezier(0.32,0.72,0,1);
 display:flex;flex-direction:column;
@@ -359,26 +509,25 @@ padding-top:max(env(safe-area-inset-top),20px);
 display:flex;align-items:center;
 padding:12px 20px 14px;
 gap:12px;
-border-bottom:1px solid var(–border2);
+border-bottom:1px solid var(--border2);
 flex-shrink:0;
 }
 .lyrics-header-info{flex:1;min-width:0;}
 .lyrics-header-title{
-font-family:var(–serif);font-size:16px;
-color:var(–txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+font-family:var(--serif);font-size:16px;
+color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 .lyrics-header-artist{
-font-size:11px;color:var(–txt2);margin-top:2px;
+font-size:11px;color:var(--txt2);margin-top:2px;
 }
 .lyrics-body{
-flex:1;overflow-y:auto;padding:28px 24px 20px;
+flex:1;overflow-y:auto;padding:28px 24px 120px;
 -webkit-overflow-scrolling:touch;
-padding-bottom:calc(80px + 20px);
 }
 .lyrics-body::-webkit-scrollbar{display:none}
 
 .lyric-line{
-font-family:var(–serif);
+font-family:var(--serif);
 font-size:22px;
 line-height:1.55;
 color:rgba(240,244,240,0.4);
@@ -388,92 +537,36 @@ cursor:default;
 letter-spacing:-0.01em;
 }
 .lyric-line.active{
-color:var(–txt);
+color:var(--txt);
 font-size:26px;
 }
 .lyric-line.passed{
 color:rgba(240,244,240,0.6);
 }
+/* 録画タイマーを歌詞に埋め込む */
 .lyric-line.rec-embed{
-color:rgba(52,199,89,0.0);
+color:rgba(52,199,89,0.0); /* 完全透明 - 見えない */
 font-size:0;
 margin:0;height:0;overflow:hidden;
 }
 .lyrics-close{
 width:36px;height:36px;border-radius:50%;
-border:1px solid var(–border2);background:var(–card);
-color:var(–txt2);display:flex;align-items:center;justify-content:center;
+border:1px solid var(--border2);background:var(--card);
+color:var(--txt2);display:flex;align-items:center;justify-content:center;
 cursor:pointer;flex-shrink:0;
 }
 .lyrics-close:active{transform:scale(0.9);}
 .lyrics-now-pill{
 display:inline-flex;align-items:center;gap:6px;
-background:var(–g-soft);border:1px solid var(–border);
+background:var(--g-soft);border:1px solid var(--border);
 border-radius:100px;padding:4px 12px;
-font-family:var(–mono);font-size:9px;color:var(–g);letter-spacing:0.15em;
+font-family:var(--mono);font-size:9px;color:var(--g);letter-spacing:0.15em;
 margin-bottom:20px;
 }
 .lyrics-now-pill-dot{
-width:5px;height:5px;border-radius:50%;background:var(–g);
+width:5px;height:5px;border-radius:50%;background:var(--g);
 animation:blink .9s ease-in-out infinite;
 }
-
-/* ══ LYRICS NOW-PLAYING BAR (下部) ══ */
-.lyrics-now-bar{
-position:absolute;
-bottom:0;left:0;right:0;
-background:rgba(13,13,13,0.96);
-backdrop-filter:blur(20px);
-border-top:1px solid var(–border2);
-padding:10px 16px;
-padding-bottom:max(env(safe-area-inset-bottom,12px),12px);
-display:flex;align-items:center;gap:12px;
-z-index:2;
-flex-shrink:0;
-}
-.lyrics-now-art{
-width:36px;height:36px;border-radius:8px;
-overflow:hidden;flex-shrink:0;
-border:1px solid var(–border2);
-}
-.lyrics-now-art canvas{width:100%;height:100%;display:block}
-.lyrics-now-info{
-flex:1;min-width:0;
-}
-.lyrics-now-title{
-font-size:11px;font-weight:600;color:var(–txt);
-white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.lyrics-now-artist{
-font-size:10px;color:var(–txt2);margin-top:1px;
-white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.lyrics-now-meter{
-margin-top:5px;
-height:2px;
-background:var(–card2);
-border-radius:1px;
-overflow:hidden;
-}
-.lyrics-now-meter-fill{
-height:100%;
-background:linear-gradient(90deg,var(–g2),var(–g));
-border-radius:1px;
-width:0%;
-transition:width .1s linear;
-}
-.lyrics-now-eq{
-display:flex;align-items:center;gap:2px;
-height:16px;flex-shrink:0;
-}
-.lyrics-now-eq .lbar{
-width:2px;border-radius:1px;background:var(–g);opacity:0.7;
-}
-@keyframes leq1{0%,100%{height:4px}50%{height:14px}}
-@keyframes leq2{0%,100%{height:8px}40%{height:4px}}
-@keyframes leq3{0%,100%{height:12px}60%{height:4px}}
-@keyframes leq4{0%,100%{height:6px}50%{height:14px}}
-@keyframes leq5{0%,100%{height:10px}30%{height:4px}}
 
 /* ══ CAMERA SETTINGS PANEL ══ */
 .cam-settings-panel{
@@ -482,440 +575,648 @@ background:rgba(5,8,6,0.97);
 backdrop-filter:blur(28px) saturate(0.2) brightness(0.6);
 transform:translateY(100%);transition:transform .38s cubic-bezier(0.32,0.72,0,1);
 display:flex;flex-direction:column;
+padding-top:max(env(safe-area-inset-top),20px);
 }
 .cam-settings-panel.open{transform:translateY(0)}
 .cam-settings-header{
-display:flex;align-items:center;gap:12px;
-padding:16px 20px;border-bottom:1px solid rgba(52,199,89,0.1);
-flex-shrink:0;
+display:flex;align-items:center;padding:12px 20px 16px;
+gap:12px;border-bottom:1px solid var(--border2);
 }
 .cam-settings-title{
-font-family:var(–serif);font-size:18px;color:var(–txt);flex:1;letter-spacing:-0.01em;
+flex:1;font-family:var(--serif);font-size:22px;color:var(--txt);
 }
 .cam-settings-body{
-flex:1;overflow-y:auto;padding:20px;
+flex:1;overflow-y:auto;padding:20px 16px;
 -webkit-overflow-scrolling:touch;
 }
 .cam-settings-body::-webkit-scrollbar{display:none}
-
 .cam-section-label{
-font-family:var(–mono);font-size:10px;letter-spacing:0.2em;
-color:var(–txt3);text-transform:uppercase;margin:16px 0 10px;font-weight:600;
+font-family:var(--mono);font-size:10px;letter-spacing:0.2em;
+color:var(--txt3);text-transform:uppercase;margin-bottom:10px;margin-top:24px;
 }
-
-.cam-zoom-group,.cam-lens-group{
-display:flex;gap:8px;
+.cam-section-label:first-child{margin-top:0}
+.cam-zoom-group{
+display:flex;gap:8px;padding:4px 0 8px;
 }
-.cam-zoom-btn,.cam-lens-btn{
-flex:1;padding:10px;border-radius:10px;
-border:1px solid var(–border2);background:var(–card);
-color:var(–txt2);font-size:13px;font-weight:500;
+.cam-zoom-btn{
+flex:1;height:44px;border-radius:12px;
+border:1px solid var(--border2);background:var(--card);
+color:var(--txt2);font-family:var(--mono);font-size:14px;font-weight:700;
 cursor:pointer;transition:all .2s;
 }
-.cam-zoom-btn:active,.cam-lens-btn:active{transform:scale(0.95)}
-.cam-zoom-btn.active,.cam-lens-btn.active{
-background:var(–g);color:#000;border-color:var(–g);
+.cam-zoom-btn.active{
+background:var(--g-soft);border-color:rgba(52,199,89,0.4);
+color:var(--g);
 }
-
+.cam-zoom-btn:active{transform:scale(0.95)}
+.cam-lens-group{
+display:flex;gap:8px;padding:4px 0 8px;
+}
+.cam-lens-btn{
+flex:1;height:44px;border-radius:12px;
+border:1px solid var(--border2);background:var(--card);
+color:var(--txt2);font-family:var(--sans);font-size:13px;font-weight:600;
+cursor:pointer;transition:all .2s;
+}
+.cam-lens-btn.active{
+background:var(--g-soft);border-color:rgba(52,199,89,0.4);
+color:var(--g);
+}
+.cam-lens-btn:active{transform:scale(0.95)}
+.cam-toggle-row{
+display:flex;align-items:center;gap:12px;
+padding:14px 16px;border-radius:14px;
+border:1px solid var(--border2);background:var(--card);
+margin-bottom:8px;
+}
+.cam-toggle-info{flex:1}
+.cam-toggle-name{font-size:14px;font-weight:600;color:var(--txt)}
+.cam-toggle-sub{font-size:11px;color:var(--txt2);margin-top:2px}
+.cam-switch{
+position:relative;width:46px;height:26px;flex-shrink:0;
+}
+.cam-switch input{opacity:0;width:0;height:0;position:absolute}
+.cam-switch-track{
+position:absolute;inset:0;border-radius:13px;
+background:var(--card2);border:1px solid var(--border2);
+transition:background .2s,border-color .2s;cursor:pointer;
+}
+.cam-switch input:checked + .cam-switch-track{
+background:var(--g);border-color:var(--g);
+}
+.cam-switch-thumb{
+position:absolute;top:3px;left:3px;
+width:18px;height:18px;border-radius:50%;
+background:#fff;transition:transform .2s;
+pointer-events:none;
+}
+.cam-switch input:checked ~ .cam-switch-thumb{transform:translateX(20px)}
 .cam-info-row{
 display:flex;align-items:center;gap:12px;
-padding:14px 12px;border-radius:12px;
-background:rgba(52,199,89,0.05);border:1px solid var(–border);
-margin-bottom:10px;
+padding:14px 16px;border-radius:14px;
+border:1px solid var(--border2);background:var(--card);
+margin-bottom:8px;
 }
 .cam-info-ico{
-width:36px;height:36px;border-radius:8px;
-background:rgba(52,199,89,0.1);border:1px solid var(–border);
+width:38px;height:38px;border-radius:10px;
+background:var(--g-soft);border:1px solid var(--border);
 display:flex;align-items:center;justify-content:center;
-color:var(–g);flex-shrink:0;
+flex-shrink:0;
 }
-.cam-info-ico svg{width:18px;height:18px}
+.cam-info-ico svg{width:18px;height:18px;color:var(--g)}
 .cam-info-label{flex:1}
-.cam-info-name{font-size:12px;font-weight:600;color:var(–txt)}
-.cam-info-sub{font-size:10px;color:var(–txt2);margin-top:2px}
+.cam-info-name{font-size:14px;font-weight:600;color:var(--txt)}
+.cam-info-sub{font-size:11px;color:var(--txt2);margin-top:2px}
 .cam-info-val{
-font-family:var(–mono);font-size:11px;color:var(–g);
-font-weight:600;flex-shrink:0;
+font-family:var(--mono);font-size:12px;color:var(--g);
+flex-shrink:0;letter-spacing:0.05em;
 }
-
-.camera-feed{
-width:100%;height:100%;object-fit:cover;
-}
-
-.camera-overlay{
-position:absolute;inset:0;
-}
-
-.camera-controls{
-position:absolute;bottom:20px;left:0;right:0;
-display:flex;align-items:center;justify-content:center;gap:16px;
-}
-
-.btn-cam-action{
-width:56px;height:56px;border-radius:50%;
-border:2px solid rgba(255,255,255,0.3);background:rgba(0,0,0,0.4);
-color:#fff;display:flex;align-items:center;justify-content:center;
-cursor:pointer;transition:all .2s;
-}
-.btn-cam-action:active{transform:scale(0.9)}
-
-.toast-container{
-position:fixed;bottom:20px;left:20px;right:20px;
-z-index:999;pointer-events:none;
-}
-.toast{
-background:var(–card);border:1px solid var(–border2);
-border-radius:12px;padding:12px 16px;
-color:var(–txt);font-size:13px;
-animation:toast-slide .3s cubic-bezier(0.32,0.72,0,1);
-margin-bottom:8px;pointer-events:all;
-}
-@keyframes toast-slide{from{transform:translateY(120%);opacity:0}to{transform:translateY(0);opacity:1}}
-
-.tab-buttons{
-display:flex;gap:0;border-bottom:1px solid var(–border2);
-}
-.tab-btn{
-flex:1;padding:12px;border:none;background:transparent;
-color:var(–txt2);font-size:13px;font-weight:500;
-cursor:pointer;transition:all .2s;border-bottom:2px solid transparent;
-}
-.tab-btn.active{color:var(–g);border-bottom-color:var(–g)}
-
-.spinner{
-width:20px;height:20px;border:2px solid var(–border2);
-border-top-color:var(–g);border-radius:50%;
-animation:spin .8s linear infinite;
-}
-@keyframes spin{to{transform:rotate(360deg)}}
 </style>
-</head>
 
+
+</head>
 <body>
+
+<!-- Always-green banner for status bar -->
 
 <div class="site-banner"></div>
 
-<div class="perm-screen" id="permScreen">
-  <div class="perm-wordmark">Melos</div>
-  <div class="perm-tagline">Music Capture</div>
+<!-- WHITE SCREEN (フロントカメラ設定ボタン時) -->
 
-  <div class="perm-card">
-    <div class="perm-card-title">Permissions</div>
-    <div class="perm-row">
-      <div class="perm-ico">📷</div>
-      <div class="perm-txt">
-        <strong>Camera Access</strong>
-        <span>Record video with your device's camera</span>
-      </div>
+<div class="white-screen" id="whiteScreen" onclick="closeWhiteScreen()"></div>
+
+<!-- LYRICS PANEL -->
+
+<div class="lyrics-panel" id="lyricsPanel">
+  <div class="lyrics-header">
+    <div class="lyrics-close" id="btnCloseLyrics">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 13L13 1M1 1l12 12"/></svg>
     </div>
-    <div class="perm-row">
-      <div class="perm-ico">🎤</div>
-      <div class="perm-txt">
-        <strong>Microphone Access</strong>
-        <span>Capture audio from your microphone</span>
-      </div>
+    <div class="lyrics-header-info">
+      <div class="lyrics-header-title" id="lyricsSongTitle">Midnight Drive</div>
+      <div class="lyrics-header-artist" id="lyricsArtist">Neon Echo</div>
     </div>
   </div>
-
-  <button class="btn-perm" id="btnPermStart">Grant & Continue</button>
-  <button class="btn-perm" style="background:#555 !important;margin-top:8px" id="btnRealMode">Demo Mode</button>
+  <div class="lyrics-body" id="lyricsBody"></div>
 </div>
+
+<!-- PERMISSION SCREEN -->
+
+<div class="perm-screen" id="permScreen">
+  <div class="perm-card">
+    <div style="text-align:center;padding:16px 0 8px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" width="48" height="48" style="color:var(--g);opacity:0.7">
+        <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+      </svg>
+      <div style="font-family:var(--serif);font-size:22px;color:var(--g);margin-top:12px;letter-spacing:-0.01em;">Melos</div>
+      <!-- Music Prayer リンク（ロゴ下・リアルモード遷移機能付き） -->
+      <div id="btnRealMode" style="margin-top:10px;font-family:var(--mono);font-size:10px;color:var(--txt3);letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;transition:color .2s;-webkit-tap-highlight-color:transparent;">Music Prayer</div>
+    </div>
+  </div>
+  <!-- Start ボタン（フェイクモード） -->
+  <div class="btn-perm" id="btnPermStart">Start</div>
+</div>
+
+<!-- MAIN APP -->
 
 <div class="app" id="mainApp">
+
+  <!-- Always-green status strip -->
+
   <div class="status-strip">
     <div class="strip-dot pulse"></div>
-    <div class="strip-label">LIVE</div>
+    <div class="strip-label">MELOS</div>
   </div>
+
+  <!-- Navbar -->
 
   <div class="navbar">
-    <div class="nav-wordmark">Melos</div>
+    <div class="nav-wordmark" style="display:flex;align-items:center;gap:7px;color:#ffffff;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.6" width="18" height="18" style="flex-shrink:0;opacity:0.9">
+        <path d="M9 18V5l12-2v13"/>
+        <circle cx="6" cy="18" r="3"/>
+        <circle cx="18" cy="16" r="3"/>
+      </svg>
+      Melos
+    </div>
     <div class="nav-right">
-      <button class="nav-btn" id="btnSearch">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      </button>
-      <button class="nav-btn" id="btnLibrary">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-      </button>
-      <button class="nav-btn" id="btnCamSwitch">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-      </button>
-      <button class="nav-btn" id="navProfile">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      </button>
-    </div>
+
+  <!-- F/B カメラインジケーター (文字色を透明に) -->
+  <div id="camIndicator" style="
+    font-family:var(--mono);font-size:11px;font-weight:700;
+    color:transparent;letter-spacing:0.1em;
+    width:24px;height:24px;
+    display:flex;align-items:center;justify-content:center;
+    transition:all .2s;
+  ">B</div>
+
+  <!-- 音符アイコン → カメラ切り替え -->
+  <div class="nav-btn" id="btnCamSwitch" title="Switch Camera">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <path d="M9 18V5l12-2v13"/>
+      <circle cx="6" cy="18" r="3"/>
+      <circle cx="18" cy="16" r="3"/>
+    </svg>
   </div>
 
-  <div class="scroll-body">
-    <div class="album-hero">
-      <canvas class="album-art-canvas" id="albumCanvas"></canvas>
-      <div class="album-overlay"></div>
-      <div class="album-badge">
-        <div class="album-badge-dot"></div>
-        <span>Now Playing</span>
-      </div>
-    </div>
-
-    <div class="song-info">
-      <div>
-        <div class="song-title" id="songTitle">Midnight <em>Drive</em></div>
-        <div class="song-artist" id="songArtist">Neon Echo</div>
-      </div>
-      <button class="btn-heart" id="btnHeart">♡</button>
-    </div>
-
-    <div class="waveform-bars" id="waveformBars"></div>
-
-    <div class="progress-wrap">
-      <div class="progress-track" id="progressTrack">
-        <div class="progress-fill" id="progressFill"></div>
-      </div>
-      <div class="progress-times">
-        <span id="timeCurrent">0:00</span>
-        <span id="timeDuration">3:45</span>
-      </div>
-    </div>
-
-    <div class="ctrl-row">
-      <div class="ctrl-side">
-        <button class="btn-ctrl" id="btnShuffle">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 1 23 7 17 7"/><polyline points="1 23 1 17 7 17"/><path d="M20.49 9a9 9 0 0 0-12.12-5.69M3.5 15a9 9 0 0 0 15.02 5.72"/></svg>
-        </button>
-        <button class="btn-ctrl" id="btnRepeat">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 2 21 6 17 10"/><path d="M21 4H9a4 4 0 0 0-4 4v12m-4-6l4 4-4 4"/><path d="M3 20h12a4 4 0 0 0 4-4V4"/></svg>
-        </button>
-      </div>
-
-      <button class="btn-play" id="btnPlay">
-        <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-      </button>
-
-      <div class="ctrl-side">
-        <button class="btn-ctrl" id="btnReset">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
-        </button>
-        <button class="btn-ctrl" id="btnCamSettings">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><path d="M12 1v6m0 6v6M4.22 4.22l4.24 4.24m5.08 5.08l4.24 4.24M1 12h6m6 0h6M4.22 19.78l4.24-4.24m5.08-5.08l4.24-4.24"/></svg>
-        </button>
-      </div>
-    </div>
-
-    <div class="volume-row">
-      <div class="vol-ico">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
-      </div>
-      <div class="vol-track">
-        <div class="vol-fill"></div>
-      </div>
-    </div>
-
-    <div class="section-label">Queue</div>
-    <div id="queueList"></div>
-
-    <div class="section-label">Suggestions</div>
-    <div id="suggestionsList"></div>
-  </div>
-
-  <div class="white-screen" id="whiteScreen"></div>
-
-  <!-- ════════════════════════════════════════════════════════════════ -->
-  <!-- LYRICS PANEL -->
-  <!-- ════════════════════════════════════════════════════════════════ -->
-  <div class="lyrics-panel" id="lyricsPanel">
-    <div class="lyrics-header">
-      <button class="btn-back" id="btnCloseLyrics">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 2L4 7l5 5"/></svg>
-      </button>
-      <div class="lyrics-header-info">
-        <div class="lyrics-header-title" id="lyricsSongTitle">Midnight Drive</div>
-        <div class="lyrics-header-artist" id="lyricsArtist">Neon Echo</div>
-      </div>
-    </div>
-    <div class="lyrics-body" id="lyricsBody"></div>
-
-    <div class="lyrics-now-bar" id="lyricsNowBar">
-      <div class="lyrics-now-art">
-        <canvas id="lyricsNowCanvas" width="36" height="36"></canvas>
-      </div>
-      <div class="lyrics-now-info">
-        <div class="lyrics-now-title" id="lyricsNowTitle">Midnight Drive</div>
-        <div class="lyrics-now-artist" id="lyricsNowArtist">Neon Echo</div>
-        <div class="lyrics-now-meter">
-          <div class="lyrics-now-meter-fill" id="lyricsNowMeter"></div>
-        </div>
-      </div>
-      <div class="lyrics-now-eq" id="lyricsNowEq">
-        <div class="lbar" style="animation:leq1 .8s ease-in-out infinite"></div>
-        <div class="lbar" style="animation:leq2 .8s ease-in-out infinite"></div>
-        <div class="lbar" style="animation:leq3 .8s ease-in-out infinite"></div>
-        <div class="lbar" style="animation:leq4 .8s ease-in-out infinite"></div>
-        <div class="lbar" style="animation:leq5 .8s ease-in-out infinite"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ════════════════════════════════════════════════════════════════ -->
-  <!-- CAMERA SETTINGS PANEL -->
-  <!-- ════════════════════════════════════════════════════════════════ -->
-  <div class="cam-settings-panel" id="camSettingsPanel">
-    <div class="cam-settings-header">
-      <button class="btn-back" id="btnCloseCamSettings">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 2L4 7l5 5"/></svg>
-      </button>
-      <div class="cam-settings-title">Camera Settings</div>
-    </div>
-    <div class="cam-settings-body">
-
-      <div class="cam-section-label">Zoom</div>
-      <div class="cam-zoom-group">
-        <button class="cam-zoom-btn active" id="camZoom1x" onclick="setCamZoom('1x')">1x</button>
-        <button class="cam-zoom-btn" id="camZoom2x" onclick="setCamZoom('2x')">2x</button>
-        <button class="cam-zoom-btn" id="camZoom3x" onclick="setCamZoom('3x')">3x</button>
-      </div>
-
-      <div class="cam-section-label">Lens</div>
-      <div class="cam-lens-group">
-        <button class="cam-lens-btn active" id="camLensWide" onclick="setCamLens('wide')">Wide</button>
-        <button class="cam-lens-btn" id="camLensStd" onclick="setCamLens('standard')">Standard</button>
-      </div>
-
-      <div class="cam-section-label">Options</div>
-
-      <div class="cam-info-row">
-        <div class="cam-info-ico">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-            <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
-          </svg>
-        </div>
-        <div class="cam-info-label">
-          <div class="cam-info-name">Resolution</div>
-          <div class="cam-info-sub">Video capture quality</div>
-        </div>
-        <div class="cam-info-val" id="camResVal">1080p</div>
-      </div>
-
-      <div class="cam-info-row">
-        <div class="cam-info-ico">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-          </svg>
-        </div>
-        <div class="cam-info-label">
-          <div class="cam-info-name">Frame Rate</div>
-          <div class="cam-info-sub">Playback smoothness</div>
-        </div>
-        <div class="cam-info-val" id="camFpsVal">60 fps</div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ════════════════════════════════════════════════════════════════ -->
-  <!-- LIBRARY PANEL -->
-  <!-- ════════════════════════════════════════════════════════════════ -->
-  <div class="library-panel" id="libraryPanel">
-    <div class="library-header">
-      <div class="library-title">Recordings</div>
-      <button class="btn-back" id="btnCloseLibrary">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2 12l10-10M12 12L2 2"/></svg>
-      </button>
-    </div>
-    <div class="library-body" id="libraryBody"></div>
-  </div>
-
-  <!-- ════════════════════════════════════════════════════════════════ -->
-  <!-- MUSIC LIBRARY PANEL -->
-  <!-- ════════════════════════════════════════════════════════════════ -->
-  <div class="music-library-panel" id="musicLibPanel">
-    <div class="music-library-header">
-      <div class="music-library-title">Music Library</div>
-      <button class="btn-back" id="btnCloseMusicLib">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2 12l10-10M12 12L2 2"/></svg>
-      </button>
-    </div>
-    <div class="music-library-body" id="musicLibBody"></div>
-  </div>
-
-  <!-- ════════════════════════════════════════════════════════════════ -->
-  <!-- SEARCH PANEL -->
-  <!-- ════════════════════════════════════════════════════════════════ -->
-  <div class="search-panel" id="searchPanel">
-    <div class="search-header">
-      <input type="text" class="search-input" id="searchInput" placeholder="Search songs...">
-      <button class="btn-back" id="btnCloseSearch">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2 12l10-10M12 12L2 2"/></svg>
-      </button>
-    </div>
-    <div class="search-body" id="searchBody"></div>
-  </div>
-
-  <!-- ════════════════════════════════════════════════════════════════ -->
-  <!-- PREVIEW MODAL -->
-  <!-- ════════════════════════════════════════════════════════════════ -->
-  <div class="preview-modal" id="previewModal">
-    <img id="previewImg" class="preview-img" src="" alt="Preview">
+  <!-- 設定アイコン → リセット -->
+  <div class="nav-btn" id="btnReset" title="Settings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+    </svg>
   </div>
 
 </div>
 
+  </div>
+
+  <!-- Scroll body -->
+
+  <div class="scroll-body">
+
+<!-- Album Hero (長押しで歌詞表示) -->
+<div class="album-hero" id="albumHero">
+  <canvas class="album-art-canvas" id="albumCanvas"></canvas>
+  <div class="album-overlay"></div>
+  <div class="album-badge" id="albumBadge">
+    <div class="album-badge-dot" id="badgeDot"></div>
+    <span id="badgeText">NOW PLAYING</span>
+  </div>
+</div>
+
+<!-- Song info -->
+<div class="song-info">
+  <div>
+    <div class="song-title" id="songTitle"><em>Midnight</em> Drive</div>
+    <div class="song-artist" id="songArtist">Neon Echo · Synthwave Collection</div>
+  </div>
+  <div class="btn-heart" id="btnHeart">♡</div>
+</div>
+
+<!-- Progress -->
+<div class="progress-wrap">
+  <div class="progress-track">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+  <div class="progress-times">
+    <span id="timeElapsed">0:00</span>
+    <span id="timeDuration">3:42</span>
+  </div>
+</div>
+
+<!-- Controls (EQ wave above play button) -->
+<div class="ctrl-row">
+  <div class="ctrl-side">
+    <div class="btn-ctrl active" id="btnShuffle">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M16 3h5v5M4 20 21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/>
+      </svg>
+    </div>
+    <div class="btn-ctrl" id="btnPrev">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polygon points="19,20 9,12 19,4"/><line x1="5" y1="19" x2="5" y2="5"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- ★ 再生ボタン + 波形ラッパー -->
+  <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+    <!-- EQ Waveform (再生ボタンの上) -->
+    <div class="waveform-bars paused" id="waveform" style="margin-bottom:0;height:24px;"></div>
+    <!-- メインボタン: 見た目は再生、実は録画 -->
+    <div class="btn-play" id="btnPlay">
+      <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
+        <polygon points="5,3 19,12 5,21"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="ctrl-side">
+    <div class="btn-ctrl" id="btnNext">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polygon points="5,4 15,12 5,20"/><line x1="19" y1="5" x2="19" y2="19"/>
+      </svg>
+    </div>
+    <div class="btn-ctrl" id="btnRepeat">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+        <path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- Volume -->
+<div class="volume-row">
+  <div class="vol-ico">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+    </svg>
+  </div>
+  <div class="vol-track"><div class="vol-fill"></div></div>
+  <div class="vol-ico">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+    </svg>
+  </div>
+</div>
+
+<!-- Queue -->
+<div class="section-label">Up Next</div>
+<div class="queue-list" id="queueList"></div>
+
+  </div><!-- /scroll-body -->
+
+  <!-- Bottom Nav -->
+
+  <div class="bottom-nav">
+    <div class="bnav-item active" id="navHome">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      <div class="bnav-label">Home</div>
+    </div>
+    <div class="bnav-item" id="navSearch">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <div class="bnav-label">Search</div>
+    </div>
+    <!-- ★ 下のLibrary → ダミー音楽ライブラリ -->
+    <div class="bnav-item" id="navMusicLib">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 3h6v18H3z"/><path d="M9 3h6v18H9z"/><rect x="15" y="3" width="6" height="18"/>
+      </svg>
+      <div class="bnav-label">Library</div>
+    </div>
+    <!-- ★ Profile → リセット機能 -->
+    <div class="bnav-item" id="navProfile">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <div class="bnav-label">Profile</div>
+    </div>
+  </div>
+
+</div><!-- /main app -->
+
+<!-- MUSIC LIBRARY PANEL (ダミー) -->
+
+<div class="library-panel" id="musicLibPanel">
+  <div class="lib-header">
+    <button class="btn-back" id="btnCloseMusicLib">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 2L4 7l5 5"/></svg>
+    </button>
+    <div class="lib-title">My Library</div>
+    <div class="lib-count">20 SONGS</div>
+  </div>
+  <div class="lib-body" id="musicLibBody"></div>
+</div>
+
+<!-- RECORDINGS PANEL (実データ・上のギャラリーボタンからのみ) -->
+
+<div class="library-panel" id="libraryPanel">
+  <div class="lib-header">
+    <button class="btn-back" id="btnCloseLib">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 2L4 7l5 5"/></svg>
+    </button>
+    <div class="lib-title">Recordings</div>
+    <div class="lib-count" id="libCount">0 FILES</div>
+  </div>
+  <div class="lib-body" id="libBody">
+    <div class="lib-empty">
+      <div style="font-size:36px;opacity:0.3">🎬</div>
+      <div>NO RECORDINGS YET</div>
+    </div>
+  </div>
+</div>
+
+<!-- SEARCH PANEL -->
+
+<div class="search-panel" id="searchPanel">
+  <div class="search-header">
+    <div class="search-input-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input class="search-input" id="searchInput" type="search" placeholder="Songs, artists, albums..." autocomplete="off">
+    </div>
+    <div style="font-family:var(--sans);font-size:14px;color:var(--g);cursor:pointer;flex-shrink:0;" id="btnCloseSearch">Cancel</div>
+  </div>
+  <div class="search-body">
+    <div class="section-label" style="margin-bottom:16px">Browse Categories</div>
+    <div class="search-categories">
+      <div class="search-cat">
+        <div class="search-cat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
+        <div><div class="search-cat-name">New Releases</div><div class="search-cat-sub">Latest tracks & albums</div></div>
+      </div>
+      <div class="search-cat">
+        <div class="search-cat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+        <div><div class="search-cat-name">Top Charts</div><div class="search-cat-sub">Most played this week</div></div>
+      </div>
+      <div class="search-cat">
+        <div class="search-cat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg></div>
+        <div><div class="search-cat-name">Genres</div><div class="search-cat-sub">Synthwave, Ambient, Jazz…</div></div>
+      </div>
+      <div class="search-cat">
+        <div class="search-cat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
+        <div><div class="search-cat-name">Playlists</div><div class="search-cat-sub">Curated collections</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PREVIEW MODAL (偽装: "Video Clips" ビューワー) -->
+
+<div class="preview-modal" id="previewModal">
+  <div class="preview-header">
+    <div>
+      <div class="preview-header-title">Video Clip</div>
+      <div class="preview-header-sub" id="previewMeta">—</div>
+    </div>
+    <button class="btn-preview-close" id="btnPreviewClose">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 1l12 12M13 1L1 13"/></svg>
+    </button>
+  </div>
+  <div class="preview-video-wrap">
+    <video class="preview-video" id="previewVideo" controls playsinline webkit-playsinline></video>
+  </div>
+  <!-- iOS向け保存案内 (削除済み) -->
+  <div id="iosSaveHint" style="display:none;"></div>
+  <div class="preview-actions" style="display:none;">
+    <button id="btnPreviewCancel"></button>
+    <button id="btnPreviewDl"></button>
+  </div>
+</div>
+
+
+<!-- CAMERA SETTINGS PANEL (リアルモード: ホームボタンで遷移) -->
+
+<div class="cam-settings-panel" id="camSettingsPanel">
+  <div class="cam-settings-header">
+    <button class="btn-back" id="btnCloseCamSettings">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 2L4 7l5 5"/></svg>
+    </button>
+    <div class="cam-settings-title">Camera Settings</div>
+  </div>
+  <div class="cam-settings-body">
+
+    <!-- ズーム -->
+    <div class="cam-section-label">Zoom</div>
+    <div class="cam-zoom-group">
+      <button class="cam-zoom-btn active" id="camZoom1x" onclick="setCamZoom('1x')">1x</button>
+      <button class="cam-zoom-btn" id="camZoom2x" onclick="setCamZoom('2x')">2x</button>
+      <button class="cam-zoom-btn" id="camZoom3x" onclick="setCamZoom('3x')">3x</button>
+    </div>
+
+    <!-- レンズ切替 -->
+    <div class="cam-section-label">Lens</div>
+    <div class="cam-lens-group">
+      <button class="cam-lens-btn" id="camLensUltraWide" onclick="setCamLens('ultrawide')">Ultra Wide</button>
+      <button class="cam-lens-btn active" id="camLensWide" onclick="setCamLens('wide')">Wide</button>
+      <button class="cam-lens-btn" id="camLensStd" onclick="setCamLens('standard')">Standard</button>
+    </div>
+
+    <!-- グリッド表示 -->
+    <div class="cam-section-label">Options</div>
+    <div class="cam-toggle-row">
+      <div class="cam-toggle-info">
+        <div class="cam-toggle-name">Grid Lines</div>
+        <div class="cam-toggle-sub">Composition guide overlay</div>
+      </div>
+      <label class="cam-switch">
+        <input type="checkbox" id="camToggleGrid">
+        <div class="cam-switch-track"></div>
+        <div class="cam-switch-thumb"></div>
+      </label>
+    </div>
+
+    <!-- 解像度 -->
+    <div class="cam-info-row">
+      <div class="cam-info-ico">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+        </svg>
+      </div>
+      <div class="cam-info-label">
+        <div class="cam-info-name">Resolution</div>
+        <div class="cam-info-sub">Video capture quality</div>
+      </div>
+      <div class="cam-info-val" id="camResVal">1080p</div>
+    </div>
+
+    <!-- フレームレート -->
+    <div class="cam-info-row">
+      <div class="cam-info-ico">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+        </svg>
+      </div>
+      <div class="cam-info-label">
+        <div class="cam-info-name">Frame Rate</div>
+        <div class="cam-info-sub">Frames per second</div>
+      </div>
+      <div class="cam-info-val" id="camFpsVal">30fps</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- SAVE MODAL -->
+
+<div class="modal-backdrop" id="saveModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-icon">🎙️</div>
+    <div class="modal-title">Recording Complete</div>
+    <div class="modal-sub">Save this clip to your library?</div>
+    <div class="modal-stats">
+      <div class="mstat"><div class="mstat-val" id="mstatDur">0:00</div><div class="mstat-key">Duration</div></div>
+      <div class="mstat"><div class="mstat-val" id="mstatSize">—</div><div class="mstat-key">Size</div></div>
+    </div>
+    <div class="modal-divider"></div>
+    <button class="btn-save" id="btnSaveConfirm"><span>💾</span> Save to Library</button>
+    <button class="btn-discard" id="btnDiscard">Discard</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+
+<div class="toast" id="toast"></div>
+
+<!-- CAMERA SWITCH POPUP -->
+<div class="cam-popup" id="camPopup"></div>
+<video id="hiddenCam" style="display:none" muted playsinline></video>
+
 <script>
-// ─────────────────────────────────────────────────────────────────
-// CONFIGURATION & STATE
-// ─────────────────────────────────────────────────────────────────
+/* ═══════════════════════════════════════════════
+   STEALTH REC — disguised as "Melos" music app
+   ─ Banner: always #34c759 green (never changes)
+   ─ Camera switch: front ↔ back
+   ─ Preview: via "Video Clips" gallery icon
+   ─ Save choice modal after every recording
+═══════════════════════════════════════════════ */
 
-const SONGS=[
-  {title:'Midnight <em>Drive</em>',artist:'Neon Echo',duration:225,hue:140,style:0,lyrics:['Neon lights flicker in the night','City streets are shining bright','Driving fast through endless roads','Carrying all my heavy loads','Midnight drive, feel so alive','In this moment, I survive']},
-  {title:'Ocean <em>Waves</em>',artist:'Coastal Breeze',duration:198,hue:200,style:1,lyrics:['Waves are crashing on the shore','Calling out forevermore','Salt and sand between my toes','Where the ocean always flows','Peaceful waves, wash away','All the troubles of the day']},
-  {title:'Mountain <em>Echo</em>',artist:'Alpine Sound',duration:240,hue:280,style:2,lyrics:['Echoes bounce from peak to peak','Voices of the mountains speak','Climbing higher, reaching far','Beneath the light of every star','Mountain echo, strong and clear','Brings me closer to what I fear']},
-  {title:'Urban <em>Jungle</em>',artist:'City Pulse',duration:210,hue:40,style:1,lyrics:['Concrete jungle all around','Rhythmic urban beating sound','Neon signs and busy streets','Where the city never sleeps','Urban jungle, wild and free','This is where I want to be']},
-  {title:'Zero <em>Meridian</em>',artist:'Sync Masters',duration:195,hue:160,style:0,lyrics:['At the zero point we meet','Where all the rhythms sync and beat','Coordinates of perfect time','Everything aligns just fine','Zero meridian, align','All our moments intertwine']},
-];
+// ─── Safe-area 取得 ───
+(function(){
+  const r = document.documentElement;
+  r.style.setProperty('--safe-top', 'env(safe-area-inset-top, 50px)');
+  r.style.setProperty('--safe-bot', 'env(safe-area-inset-bottom, 0px)');
+})();
 
-let db,isRealMode=false,songIdx=0,playerSec=0,playerPlaying=false;
-let stream,recorder,recordedChunks=[],isRecording=false,facingMode='user';
 
-// ─────────────────────────────────────────────────────────────────
-// INDEXEDDB SETUP
-// ─────────────────────────────────────────────────────────────────
 
+// ─── IndexedDB ───
+const DB_NAME='melos_v2', DB_STORE='recs';
+let db=null;
 async function openDB(){
   return new Promise((res,rej)=>{
-    const req=indexedDB.open('MelosDB',1);
-    req.onupgradeneeded=()=>{
-      const db=req.result;
-      if(!db.objectStoreNames.contains('recordings')){
-        db.createObjectStore('recordings',{keyPath:'id',autoIncrement:true});
-      }
+    const r=indexedDB.open(DB_NAME,1);
+    r.onupgradeneeded=e=>{
+      if(!e.target.result.objectStoreNames.contains(DB_STORE))
+        e.target.result.createObjectStore(DB_STORE,{keyPath:'id'});
     };
-    req.onsuccess=()=>res(req.result);
-    req.onerror=()=>rej(req.error);
+    r.onsuccess=e=>res(e.target.result);
+    r.onerror=()=>rej(r.error);
   });
 }
+async function dbSave(rec){
+  const tx=db.transaction(DB_STORE,'readwrite');
+  tx.objectStore(DB_STORE).put(rec);
+  return new Promise((res,rej)=>{tx.oncomplete=res;tx.onerror=()=>rej(tx.error);});
+}
+async function dbGetAll(){
+  const tx=db.transaction(DB_STORE,'readonly');
+  const req=tx.objectStore(DB_STORE).getAll();
+  return new Promise((res,rej)=>{req.onsuccess=()=>res(req.result||[]);req.onerror=()=>rej(req.error);});
+}
+async function dbDel(id){
+  const tx=db.transaction(DB_STORE,'readwrite');
+  tx.objectStore(DB_STORE).delete(id);
+  return new Promise((res,rej)=>{tx.oncomplete=res;tx.onerror=()=>rej(tx.error);});
+}
 
-// ─────────────────────────────────────────────────────────────────
-// ALBUM ART GENERATION (MODIFIED)
-// ─────────────────────────────────────────────────────────────────
+// ─── State ───
+let stream=null;
+let mediaRecorder=null;
+let chunks=[];
+let isRecording=false;
+let recSec=0, timerInt=null;
+let playerSec=0, playerInt=null, playerPlaying=false;
+let pendingBlob=null, pendingMime='', pendingSec=0;
+let facingMode='environment';
+let previewCurrentRec=null;
+let songIdx=0;
+// ② フェイクモード vs 本物モード
+let isRealMode=false;
 
+const SONGS=[
+  {title:'<em>Midnight</em> Drive',   artist:'Neon Echo · Synthwave Collection', dur:'3:42', durSec:222},
+  {title:'Glass <em>Horizon</em>',    artist:'Ama Neri · Ambient Works',          dur:'4:18', durSec:258},
+  {title:'<em>Neon</em> Rainfall',    artist:'Void Circuit · Vol. 2',             dur:'5:01', durSec:301},
+];
+const QUEUE=[
+  {name:'Glass Horizon',  artist:'Ama Neri',       dur:'4:18', hue:160},
+  {name:'Parallel Light', artist:'Echoes of Dusk', dur:'3:55', hue:200},
+  {name:'Neon Rainfall',  artist:'Void Circuit',   dur:'5:01', hue:280},
+  {name:'Carbon Dawn',    artist:'Stellar Node',   dur:'3:28', hue:30},
+];
+
+function getSupportedMime(){
+  const t=[
+    'video/mp4;codecs=avc1,mp4a.40.2',
+    'video/mp4',
+    'video/webm;codecs=vp9,opus',
+    'video/webm;codecs=vp8,opus',
+    'video/webm'
+  ];
+  return t.find(m=>MediaRecorder.isTypeSupported(m))||'';
+}
+function fmtTime(s){return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`}
+let toastTm;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTm);
+  toastTm=setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+// ─── Camera switch popup ───
+let camPopupTm;
+function showCamPopup(label){
+  const p=document.getElementById('camPopup');
+  if(!p) return;
+  p.textContent=label;
+  p.classList.remove('show');
+  // リフローでアニメーションをリセット
+  void p.offsetWidth;
+  p.classList.add('show');
+  clearTimeout(camPopupTm);
+  camPopupTm=setTimeout(()=>p.classList.remove('show'),1600);
+}
+
+// ─── Canvas album art ───
 function drawAlbumArt(canvas,size=800,hue=140,style=0){
   canvas.width=size; canvas.height=size;
   const ctx=canvas.getContext('2d');
   const cx=size*0.5, cy=size*0.5;
 
+  // スタイル0: レコード盤（デフォルト）
+  // スタイル1: 幾何学グリッド
+  // スタイル2: 波形アート
+
   if(style===1){
     // ── 幾何学グリッドスタイル ──
     const bg=ctx.createLinearGradient(0,size,size,0);
-    bg.addColorStop(0,`hsl(${hue},55%,6%)`);
-    bg.addColorStop(0.5,`hsl(${hue+20},45%,11%)`);
-    bg.addColorStop(1,`hsl(${hue+40},40%,16%)`);
+    bg.addColorStop(0,`hsl(${hue},50%,7%)`);
+    bg.addColorStop(1,`hsl(${hue+30},40%,14%)`);
     ctx.fillStyle=bg; ctx.fillRect(0,0,size,size);
     // グリッドライン
     const step=size/8;
-    ctx.strokeStyle=`hsla(${hue},60%,50%,0.07)`;
+    ctx.strokeStyle=`hsla(${hue},60%,50%,0.08)`;
     ctx.lineWidth=0.8;
     for(let i=0;i<=8;i++){
       ctx.beginPath(); ctx.moveTo(i*step,0); ctx.lineTo(i*step,size); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(0,i*step); ctx.lineTo(size,i*step); ctx.stroke();
     }
-    ctx.strokeStyle=`hsla(${hue},70%,60%,0.10)`;
+    // 対角線
+    ctx.strokeStyle=`hsla(${hue},70%,60%,0.12)`;
     ctx.lineWidth=1;
     for(let i=-8;i<=8;i++){
       ctx.beginPath(); ctx.moveTo(i*step,0); ctx.lineTo(i*step+size,size); ctx.stroke();
@@ -923,333 +1224,550 @@ function drawAlbumArt(canvas,size=800,hue=140,style=0){
     // 中央の六角形
     ctx.beginPath();
     for(let i=0;i<6;i++){
-      const a=Math.PI/3*i-Math.PI/6, r=size*0.28;
+      const a=Math.PI/3*i-Math.PI/6;
+      const r=size*0.28;
       i===0?ctx.moveTo(cx+r*Math.cos(a),cy+r*Math.sin(a)):ctx.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a));
     }
     ctx.closePath();
     ctx.strokeStyle=`hsla(${hue},70%,55%,0.5)`;
     ctx.lineWidth=2; ctx.stroke();
+    // 内側の六角形
     ctx.beginPath();
     for(let i=0;i<6;i++){
-      const a=Math.PI/3*i, r=size*0.14;
+      const a=Math.PI/3*i;
+      const r=size*0.14;
       i===0?ctx.moveTo(cx+r*Math.cos(a),cy+r*Math.sin(a)):ctx.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a));
     }
     ctx.closePath();
     ctx.fillStyle=`hsla(${hue},60%,50%,0.15)`; ctx.fill();
     ctx.strokeStyle=`hsla(${hue},70%,60%,0.6)`;
     ctx.lineWidth=1.5; ctx.stroke();
+    // 中心点
     ctx.beginPath(); ctx.arc(cx,cy,size*0.03,0,Math.PI*2);
     ctx.fillStyle=`hsl(${hue},70%,55%)`; ctx.fill();
+    // グロー
     const glow=ctx.createRadialGradient(cx,cy,0,cx,cy,size*0.3);
-    glow.addColorStop(0,`hsla(${hue},80%,60%,0.14)`);
+    glow.addColorStop(0,`hsla(${hue},80%,60%,0.12)`);
     glow.addColorStop(1,'transparent');
     ctx.fillStyle=glow; ctx.fillRect(0,0,size,size);
 
   } else if(style===2){
-    // ── オーロラ / 流体グラデーションスタイル ──
-    const bg=ctx.createLinearGradient(0,0,size,size);
-    bg.addColorStop(0,`hsl(${hue},55%,6%)`);
-    bg.addColorStop(0.4,`hsl(${hue+30},40%,10%)`);
-    bg.addColorStop(0.8,`hsl(${hue+60},50%,8%)`);
-    bg.addColorStop(1,`hsl(${hue+90},45%,12%)`);
+    // ── 波形アートスタイル ──
+    const bg=ctx.createLinearGradient(0,0,0,size);
+    bg.addColorStop(0,`hsl(${hue},40%,5%)`);
+    bg.addColorStop(0.5,`hsl(${hue+15},35%,10%)`);
+    bg.addColorStop(1,`hsl(${hue-10},45%,6%)`);
     ctx.fillStyle=bg; ctx.fillRect(0,0,size,size);
-    
-    // 流体的な円形グラデーション
-    const c1=ctx.createRadialGradient(cx*0.6,cy*0.6,0,cx,cy,size*0.6);
-    c1.addColorStop(0,`hsla(${hue+30},70%,50%,0.3)`);
-    c1.addColorStop(1,'transparent');
-    ctx.fillStyle=c1; ctx.fillRect(0,0,size,size);
-    
-    const c2=ctx.createRadialGradient(cx*1.4,cy*1.4,0,cx,cy,size*0.5);
-    c2.addColorStop(0,`hsla(${hue+60},60%,45%,0.25)`);
-    c2.addColorStop(1,'transparent');
-    ctx.fillStyle=c2; ctx.fillRect(0,0,size,size);
-    
-    // 中央の発光円
-    ctx.beginPath(); ctx.arc(cx,cy,size*0.15,0,Math.PI*2);
-    ctx.fillStyle=`hsla(${hue},80%,60%,0.2)`; ctx.fill();
-    ctx.strokeStyle=`hsla(${hue},70%,55%,0.4)`;
-    ctx.lineWidth=1.5; ctx.stroke();
-    
-    // 外側のリング
-    ctx.beginPath(); ctx.arc(cx,cy,size*0.35,0,Math.PI*2);
-    ctx.strokeStyle=`hsla(${hue+30},60%,50%,0.15)`;
-    ctx.lineWidth=2; ctx.stroke();
-
-  } else {
-    // ── デフォルト: 波状グラデーション ──
-    const bg=ctx.createLinearGradient(0,0,size,size);
-    bg.addColorStop(0,`hsl(${hue},50%,8%)`);
-    bg.addColorStop(0.5,`hsl(${hue+15},45%,12%)`);
-    bg.addColorStop(1,`hsl(${hue+30},40%,6%)`);
-    ctx.fillStyle=bg; ctx.fillRect(0,0,size,size);
-    
-    // 波状パターン
-    for(let i=0;i<3;i++){
+    // 複数の波形レイヤー
+    const layers=[
+      {amp:size*0.12, freq:0.015, phase:0,    alpha:0.35, width:2.5},
+      {amp:size*0.08, freq:0.022, phase:1.2,  alpha:0.25, width:1.8},
+      {amp:size*0.18, freq:0.009, phase:2.5,  alpha:0.15, width:3.5},
+      {amp:size*0.05, freq:0.035, phase:0.8,  alpha:0.45, width:1.2},
+    ];
+    layers.forEach(l=>{
       ctx.beginPath();
-      const amplitude=size*0.1*(3-i)*0.4;
-      const frequency=0.02;
-      const phase=i*Math.PI/1.5;
-      for(let x=0;x<=size;x+=5){
-        const y=cy+Math.sin(x*frequency+phase)*amplitude;
+      for(let x=0;x<=size;x+=2){
+        const y=cy+Math.sin(x*l.freq+l.phase)*l.amp+Math.sin(x*l.freq*2.3+l.phase)*l.amp*0.3;
         x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
       }
-      ctx.lineTo(size,size); ctx.lineTo(0,size); ctx.closePath();
-      ctx.fillStyle=`hsla(${hue},60%,50%,${0.08-i*0.02})`; ctx.fill();
-    }
-    
-    // 中央の円形グラデーション
-    const radial=ctx.createRadialGradient(cx,cy,0,cx,cy,size*0.4);
-    radial.addColorStop(0,`hsla(${hue},70%,60%,0.15)`);
-    radial.addColorStop(1,'transparent');
-    ctx.fillStyle=radial; ctx.fillRect(0,0,size,size);
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────
-// LYRICS & PLAYBACK
-// ─────────────────────────────────────────────────────────────────
-
-function updateLyricsNowBar(){
-  const s=SONGS[songIdx];
-  const titleEl=document.getElementById('lyricsSongTitle');
-  const artistEl=document.getElementById('lyricsArtist');
-  if(titleEl) titleEl.textContent=s.title.replace(/<[^>]+>/g,'');
-  if(artistEl) artistEl.textContent=s.artist;
-  
-  const titleNow=document.getElementById('lyricsNowTitle');
-  const artistNow=document.getElementById('lyricsNowArtist');
-  const titleText=s.title.replace(/<[^>]+>/g,'');
-  if(titleNow) titleNow.textContent=titleText;
-  if(artistNow) artistNow.textContent=s.artist;
-  
-  const c=document.getElementById('lyricsNowCanvas');
-  if(c) drawAlbumArt(c,72,s.hue||140,s.style||0);
-  
-  const eq=document.getElementById('lyricsNowEq');
-  if(eq){
-    eq.innerHTML='';
+      ctx.strokeStyle=`hsla(${hue},65%,55%,${l.alpha})`;
+      ctx.lineWidth=l.width; ctx.stroke();
+    });
+    // 縦のグロー帯
     for(let i=0;i<5;i++){
-      const bar=document.createElement('div');
-      bar.className='lbar';
-      const anims=['leq1','leq2','leq3','leq4','leq5'];
-      bar.style.animation=`${anims[i]} .8s ease-in-out infinite`;
-      eq.appendChild(bar);
+      const x=size*(0.15+i*0.18);
+      const g=ctx.createLinearGradient(x-size*0.04,0,x+size*0.04,0);
+      g.addColorStop(0,'transparent');
+      g.addColorStop(0.5,`hsla(${hue},70%,55%,0.06)`);
+      g.addColorStop(1,'transparent');
+      ctx.fillStyle=g; ctx.fillRect(0,0,size,size);
     }
+    // 中央グロー
+    const glow=ctx.createRadialGradient(cx,cy,0,cx,cy,size*0.25);
+    glow.addColorStop(0,`hsla(${hue},80%,60%,0.15)`);
+    glow.addColorStop(1,'transparent');
+    ctx.fillStyle=glow; ctx.fillRect(0,0,size,size);
+    // ノイズ
+    for(let i=0;i<600;i++){
+      ctx.fillStyle=`rgba(255,255,255,${Math.random()*0.025})`;
+      ctx.fillRect(Math.random()*size,Math.random()*size,1,1);
+    }
+
+  } else {
+    // ── スタイル0: レコード盤（デフォルト）──
+    const bg=ctx.createLinearGradient(0,0,size,size);
+    bg.addColorStop(0,`hsl(${hue},45%,12%)`);
+    bg.addColorStop(0.5,`hsl(${hue+20},35%,8%)`);
+    bg.addColorStop(1,`hsl(${hue-20},50%,6%)`);
+    ctx.fillStyle=bg; ctx.fillRect(0,0,size,size);
+    for(let i=0;i<800;i++){
+      const x=Math.random()*size, y=Math.random()*size;
+      const r=Math.random()*1.5;
+      ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(255,255,255,${Math.random()*0.03})`;
+      ctx.fill();
+    }
+    const grad=ctx.createRadialGradient(cx,cy,0,cx,cy,size*0.42);
+    grad.addColorStop(0,`hsl(${hue},30%,14%)`);
+    grad.addColorStop(0.3,`hsl(${hue},25%,10%)`);
+    grad.addColorStop(0.7,`hsl(${hue},20%,8%)`);
+    grad.addColorStop(1,`hsl(${hue},15%,6%)`);
+    ctx.beginPath(); ctx.arc(cx,cy,size*0.42,0,Math.PI*2);
+    ctx.fillStyle=grad; ctx.fill();
+    for(let i=1;i<18;i++){
+      const r=size*0.07+i*size*0.02;
+      ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
+      ctx.strokeStyle=`hsla(${hue},40%,50%,${0.04+i*0.002})`;
+      ctx.lineWidth=0.8; ctx.stroke();
+    }
+    const labelGrad=ctx.createRadialGradient(cx-size*0.02,cy-size*0.02,0,cx,cy,size*0.12);
+    labelGrad.addColorStop(0,`hsl(${hue},60%,22%)`);
+    labelGrad.addColorStop(1,`hsl(${hue},40%,14%)`);
+    ctx.beginPath(); ctx.arc(cx,cy,size*0.12,0,Math.PI*2);
+    ctx.fillStyle=labelGrad; ctx.fill();
+    ctx.beginPath(); ctx.arc(cx,cy,size*0.12,0,Math.PI*2);
+    ctx.strokeStyle=`hsla(${hue},60%,50%,0.15)`;
+    ctx.lineWidth=1.5; ctx.stroke();
+    const glow=ctx.createRadialGradient(cx,cy,0,cx,cy,size*0.08);
+    glow.addColorStop(0,'rgba(52,199,89,0.25)');
+    glow.addColorStop(1,'transparent');
+    ctx.fillStyle=glow; ctx.fillRect(0,0,size,size);
+    ctx.beginPath(); ctx.arc(cx,cy,size*0.025,0,Math.PI*2);
+    ctx.fillStyle='#0a0a0a'; ctx.fill();
+    const shine=ctx.createRadialGradient(size*0.75,size*0.25,0,size*0.75,size*0.25,size*0.35);
+    shine.addColorStop(0,`hsla(${hue},70%,70%,0.06)`);
+    shine.addColorStop(1,'transparent');
+    ctx.fillStyle=shine; ctx.fillRect(0,0,size,size);
   }
 }
+function drawQueueThumb(canvas,hue){
+  canvas.width=80; canvas.height=80;
+  const ctx=canvas.getContext('2d');
+  // グラデーション背景
+  const g=ctx.createLinearGradient(0,0,80,80);
+  g.addColorStop(0,`hsl(${hue},55%,18%)`);
+  g.addColorStop(1,`hsl(${hue+40},35%,8%)`);
+  ctx.fillStyle=g; ctx.fillRect(0,0,80,80);
+  // ノイズ感
+  for(let i=0;i<60;i++){
+    ctx.fillStyle=`rgba(255,255,255,${Math.random()*0.025})`;
+    ctx.fillRect(Math.random()*80,Math.random()*80,1,1);
+  }
+  // 波形っぽいライン
+  ctx.beginPath();
+  ctx.moveTo(0,48);
+  for(let x=0;x<=80;x+=4){
+    const y=48+Math.sin(x*0.18)*8+Math.sin(x*0.35)*4;
+    ctx.lineTo(x,y);
+  }
+  ctx.strokeStyle=`hsla(${hue},70%,60%,0.25)`;
+  ctx.lineWidth=1.5; ctx.stroke();
+  // 中央の丸
+  const cg=ctx.createRadialGradient(40,40,0,40,40,18);
+  cg.addColorStop(0,`hsla(${hue},60%,50%,0.3)`);
+  cg.addColorStop(1,'transparent');
+  ctx.fillStyle=cg; ctx.fillRect(0,0,80,80);
+  // 小さい穴
+  ctx.beginPath(); ctx.arc(40,40,4,0,Math.PI*2);
+  ctx.fillStyle=`hsl(${hue},20%,10%)`; ctx.fill();
+}
 
+// ─── Waveform ───
 function buildWaveform(){
-  const container=document.getElementById('waveformBars');
-  container.innerHTML='';
+  const wf=document.getElementById('waveform'); wf.innerHTML='';
+  const heights=[4,10,18,8,14,6,20,12,4,16,8,22];
+  const durations=[0.8,1.1,0.9,1.3,0.75,1.05,0.95,1.2,0.85,1.0,0.7,1.15];
+  const animNames=['eq1','eq2','eq3','eq4','eq5','eq6','eq7','eq8','eq9','eq10','eq11','eq12'];
   for(let i=0;i<12;i++){
-    const bar=document.createElement('div');
-    bar.className='bar';
-    bar.style.animation=`eq${i+1} .8s ease-in-out infinite`;
-    container.appendChild(bar);
+    const b=document.createElement('div');
+    b.className='bar';
+    b.style.cssText=`height:${heights[i]}px;animation:${animNames[i]} ${durations[i]}s ease-in-out infinite;animation-delay:${(i*0.07).toFixed(2)}s;animation-play-state:paused;`;
+    wf.appendChild(b);
   }
 }
-
-function buildQueue(){
-  const list=document.getElementById('queueList');
-  list.innerHTML='';
-  SONGS.forEach((s,i)=>{
-    const item=document.createElement('div');
-    item.className='music-item';
-    item.onclick=()=>{songIdx=i; playerSec=0; loadSong(i); if(playerPlaying){stopFakePlayer(); startFakePlayer();}};
-    item.innerHTML=`
-      <div class="music-thumb">♪</div>
-      <div class="music-info">
-        <div class="music-title">${s.title.replace(/<[^>]+>/g,'')}</div>
-        <div class="music-artist">${s.artist}</div>
-      </div>
-      <div class="music-duration">${Math.floor(s.duration/60)}:${String(s.duration%60).padStart(2,'0')}</div>
-    `;
-    list.appendChild(item);
+function setWave(on){
+  const wf=document.getElementById('waveform');
+  wf.classList.toggle('paused',!on);
+  // iOS対応: 直接各バーのanimation-play-stateを変更
+  wf.querySelectorAll('.bar').forEach(b=>{
+    b.style.animationPlayState = on ? 'running' : 'paused';
   });
 }
 
-function buildMusicLibrary(){
-  const list=document.getElementById('musicLibBody');
-  list.innerHTML='';
-  SONGS.forEach((s,i)=>{
-    const item=document.createElement('div');
-    item.className='music-item';
-    item.onclick=()=>{songIdx=i; playerSec=0; loadSong(i); if(playerPlaying){stopFakePlayer(); startFakePlayer();}};
-    item.innerHTML=`
-      <div class="music-thumb">♪</div>
-      <div class="music-info">
-        <div class="music-title">${s.title.replace(/<[^>]+>/g,'')}</div>
-        <div class="music-artist">${s.artist}</div>
-      </div>
-      <div class="music-duration">${Math.floor(s.duration/60)}:${String(s.duration%60).padStart(2,'0')}</div>
-    `;
-    list.appendChild(item);
-  });
+// ─── Fake player ───
+function startFakePlayer(){
+  if(playerInt) return;
+  playerPlaying=true; setWave(true);
+  playerInt=setInterval(()=>{
+    const s=SONGS[songIdx];
+    playerSec=(playerSec+1)%s.durSec;
+    document.getElementById('progressFill').style.width=(playerSec/s.durSec*100)+'%';
+    document.getElementById('timeElapsed').textContent=fmtTime(playerSec);
+  },1000);
 }
-
-function loadSong(idx){
-  const s=SONGS[idx];
+function stopFakePlayer(){clearInterval(playerInt);playerInt=null;playerPlaying=false;setWave(false);}
+function loadSong(i){
+  const s=SONGS[i];
   document.getElementById('songTitle').innerHTML=s.title;
   document.getElementById('songArtist').textContent=s.artist;
-  document.getElementById('timeDuration').textContent=`${Math.floor(s.duration/60)}:${String(s.duration%60).padStart(2,'0')}`;
-  drawAlbumArt(document.getElementById('albumCanvas'),800,s.hue||140,s.style||0);
-  updateLyricsNowBar();
+  document.getElementById('timeDuration').textContent=s.dur;
+  playerSec=0;
+  const hues=[140,195,280];
+  const styles=[0,1,2];
+  drawAlbumArt(document.getElementById('albumCanvas'),800,hues[i]||140,styles[i]||0);
 }
 
-function startFakePlayer(){
-  playerPlaying=true;
-  const s=SONGS[songIdx];
-  const btn=document.getElementById('btnPlay');
-  btn.innerHTML='<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
-  const bars=document.getElementById('waveformBars');
-  bars.classList.remove('paused');
-  const startTime=Date.now();
-  const interval=setInterval(()=>{
-    if(!playerPlaying){clearInterval(interval); return;}
-    playerSec=(Date.now()-startTime)/1000;
-    if(playerSec>=s.duration){
-      playerSec=0; songIdx=(songIdx+1)%SONGS.length;
-      loadSong(songIdx);
-      clearInterval(interval);
-      startFakePlayer();
-      return;
-    }
-    updateProgress();
-  },100);
-}
-
-function stopFakePlayer(){
-  playerPlaying=false;
-  const btn=document.getElementById('btnPlay');
-  btn.innerHTML='<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
-  const bars=document.getElementById('waveformBars');
-  bars.classList.add('paused');
-}
-
-function updateProgress(){
-  const s=SONGS[songIdx];
-  const pct=(playerSec/s.duration)*100;
-  document.getElementById('progressFill').style.width=pct+'%';
-  document.getElementById('timeCurrent').textContent=`${Math.floor(playerSec/60)}:${String(Math.floor(playerSec)%60).padStart(2,'0')}`;
-  document.getElementById('lyricsNowMeter').style.width=pct+'%';
-}
-
-// ─────────────────────────────────────────────────────────────────
-// LYRICS DISPLAY
-// ─────────────────────────────────────────────────────────────────
-
-let lyricsActive=false, lyricsLineIdx=0, lyricsInt=null;
-
-function openLyrics(){
-  const s=SONGS[songIdx];
-  document.getElementById('lyricsSongTitle').textContent=s.title.replace(/<[^>]+>/g,'');
-  document.getElementById('lyricsArtist').textContent=s.artist.split('·')[0].trim();
-  document.getElementById('lyricsPanel').classList.add('open');
-  lyricsActive=true;
-  
-  const dur=s.duration;
-  document.getElementById('lyricsNowMeter').style.width=(playerSec/dur*100)+'%';
-  
-  const eq=document.getElementById('lyricsNowEq');
-  if(eq){
-    eq.innerHTML='';
-    for(let i=0;i<5;i++){
-      const bar=document.createElement('div');
-      bar.className='lbar';
-      const anims=['leq1','leq2','leq3','leq4','leq5'];
-      bar.style.animation=`${anims[i]} .8s ease-in-out infinite`;
-      eq.appendChild(bar);
-    }
-  }
-  
-  const lines=s.lyrics;
-  const body=document.getElementById('lyricsBody');
-  body.innerHTML='<div class="lyrics-now-pill"><div class="lyrics-now-pill-dot"></div>Now Playing</div>';
-  lines.forEach((line,i)=>{
-    const div=document.createElement('div');
-    div.className='lyric-line';
-    div.textContent=line;
-    body.appendChild(div);
-  });
-  
-  lyricsLineIdx=0;
-  highlightLyricLine(0);
-  
-  if(lyricsInt) clearInterval(lyricsInt);
-  
-  lyricsInt=setInterval(()=>{
-    if(!lyricsActive) return;
-    lyricsLineIdx=(lyricsLineIdx+1)%lines.length;
-    highlightLyricLine(lyricsLineIdx);
-  },3000);
-}
-
-function highlightLyricLine(idx){
-  const lines=document.querySelectorAll('.lyric-line');
-  lines.forEach((l,i)=>{
-    if(i===0) return;
-    l.classList.remove('active','passed');
-    if(i===idx) l.classList.add('active');
-    else if(i<idx) l.classList.add('passed');
-  });
-}
-
-function closeLyrics(){
-  document.getElementById('lyricsPanel').classList.remove('open');
-  lyricsActive=false;
-  if(lyricsInt){clearInterval(lyricsInt); lyricsInt=null;}
-}
-
-// ─────────────────────────────────────────────────────────────────
-// UI PANELS
-// ─────────────────────────────────────────────────────────────────
-
-function showScreen(id){
-  ['musicLibPanel','libraryPanel','searchPanel','previewModal','camSettingsPanel'].forEach(pid=>{
-    const el=document.getElementById(pid);
-    if(el) el.classList.remove('open');
-  });
-  if(id){
-    const el=document.getElementById(id);
-    if(el) el.classList.add('open');
+// ─── Camera stream ───
+async function getStream(facing){
+  // ④ 本物モードでないとカメラは絶対起動しない
+  if(!isRealMode) return false;
+  if(stream){stream.getTracks().forEach(t=>t.stop()); stream=null;}
+  try{
+    const videoConstraints = facing==='user'
+      ? {facingMode:'user', width:{ideal:720}, height:{ideal:1280}}
+      : {facingMode:'environment', width:{ideal:1280}, height:{ideal:720}};
+    stream=await navigator.mediaDevices.getUserMedia({
+      video: videoConstraints,
+      audio:true
+    });
+    document.getElementById('hiddenCam').srcObject=stream;
+    return true;
+  }catch(e){
+    showToast('C-unavailable'); // ⑤ テキスト変更
+    return false;
   }
 }
 
-function openLibrary(){
+// ─── Camera switch ───
+async function switchCamera(){
+  if(isRecording) return;
+  // トーチをオフにしてからスイッチ
+  torchOn = false;
+  lightOpMode = false;
+  const btn = document.getElementById('btnReset');
+  btn.style.color = '';
+  btn.style.borderColor = '';
+  // ホワイト画面も閉じる
+  closeWhiteScreen();
+  facingMode = facingMode==='environment' ? 'user' : 'environment';
+  // フェイクモードでもポップアップ表示
+  const popupLabel = facingMode==='user' ? 'Front' : 'Back';
+  showCamPopup(popupLabel);
+  const ok=await getStream(facingMode);
+  if(ok){
+    const ind=document.getElementById('camIndicator');
+    if(ind) ind.textContent = facingMode==='user' ? 'F' : 'B';
+    const camBtn=document.getElementById('btnCamSwitch');
+    camBtn.style.transform='scale(0.85) rotate(180deg)';
+    camBtn.style.transition='transform .3s';
+    setTimeout(()=>{camBtn.style.transform='';},350);
+  }
+}
+
+// ─── Recording ───
+async function startRecording(){
+  // ② フェイクモードでは録画しない（UIだけ動く）
+  if(!isRealMode){
+    isRecording=true; // UIのtoggle用
+    document.getElementById('btnPlay').classList.add('recording');
+    document.getElementById('playIcon').innerHTML='<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+    document.getElementById('albumBadge').style.background='rgba(52,199,89,0.2)';
+    document.getElementById('albumBadge').style.borderColor='rgba(52,199,89,0.5)';
+    document.getElementById('badgeDot').style.background='var(--g)';
+    document.getElementById('badgeDot').style.boxShadow='0 0 6px var(--g)';
+    setWave(true);
+    recSec=0;
+    timerInt=setInterval(()=>{
+      recSec++;
+      const pct=Math.min(recSec/222*100,100);
+      document.getElementById('progressFill').style.width=pct+'%';
+      document.getElementById('timeElapsed').textContent=fmtTime(recSec);
+    },1000);
+    return;
+  }
+  if(!stream){
+    const ok=await getStream(facingMode);
+    if(!ok) return;
+  }
+  chunks=[]; const mime=getSupportedMime();
+  mediaRecorder=new MediaRecorder(stream,mime?{mimeType:mime}:{});
+  mediaRecorder.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};
+  mediaRecorder.onstop=onRecStop;
+  mediaRecorder.start(500); // 500ms毎にデータ収集（安定化）
+  isRecording=true; recSec=0; pendingMime=mime||'video/webm';
+
+  // UI changes
+  document.getElementById('btnPlay').classList.add('recording');
+  document.getElementById('playIcon').innerHTML='<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+
+  // Album badge → green indicator
+  document.getElementById('albumBadge').style.background='rgba(52,199,89,0.2)';
+  document.getElementById('albumBadge').style.borderColor='rgba(52,199,89,0.5)';
+  document.getElementById('badgeDot').style.background='var(--g)';
+  document.getElementById('badgeDot').style.boxShadow='0 0 6px var(--g)';
+
+  // Timer on progress
+  timerInt=setInterval(()=>{
+    recSec++;
+    const pct=Math.min(recSec/222*100,100);
+    document.getElementById('progressFill').style.width=pct+'%';
+    document.getElementById('timeElapsed').textContent=fmtTime(recSec);
+  },1000);
+
+  setWave(true);
+}
+
+function stopRecording(){
+  clearInterval(timerInt);
+  // フェイクモードはUIだけ戻す
+  if(!isRealMode){
+    isRecording=false;
+    document.getElementById('btnPlay').classList.remove('recording');
+    document.getElementById('playIcon').innerHTML='<polygon points="5,3 19,12 5,21"/>';
+    document.getElementById('albumBadge').style.background='';
+    document.getElementById('albumBadge').style.borderColor='';
+    document.getElementById('badgeDot').style.background='';
+    document.getElementById('badgeDot').style.boxShadow='';
+    playerSec=0;
+    document.getElementById('progressFill').style.width='0%';
+    document.getElementById('timeElapsed').textContent='0:00';
+    setWave(false);
+    return;
+  }
+  if(!mediaRecorder||mediaRecorder.state==='inactive') return;
+  mediaRecorder.stop();
+  clearInterval(timerInt);
+  isRecording=false; pendingSec=recSec;
+
+  // Restore UI
+  document.getElementById('btnPlay').classList.remove('recording');
+  document.getElementById('playIcon').innerHTML='<polygon points="5,3 19,12 5,21"/>';
+  document.getElementById('albumBadge').style.background='';
+  document.getElementById('albumBadge').style.borderColor='';
+  document.getElementById('badgeDot').style.background='';
+  document.getElementById('badgeDot').style.boxShadow='';
+  playerSec=0;
+  document.getElementById('progressFill').style.width='0%';
+  document.getElementById('timeElapsed').textContent='0:00';
+  setWave(false);
+}
+
+async function onRecStop(){
+  const blob=new Blob(chunks,{type:pendingMime});
+  // 自動保存（モーダルなし・トーストなし）
+  const buf=await blob.arrayBuffer();
+  const ext=pendingMime.includes('mp4')?'mp4':'webm';
+  const id=crypto.randomUUID();
+  await dbSave({id,data:buf,mimeType:pendingMime,ext,timestamp:Date.now(),duration:pendingSec,size:blob.size,facing:facingMode});
+  chunks=[];
+}
+
+// ─── Save modal events（残骸だが念のため無害化） ───
+document.getElementById('btnSaveConfirm').addEventListener('click',()=>{
+  document.getElementById('saveModal').classList.remove('open');
+});
+document.getElementById('btnDiscard').addEventListener('click',()=>{
+  document.getElementById('saveModal').classList.remove('open');
+});
+
+// ─── Library ───
+async function openLibrary(){
+  await renderLibrary();
+  showScreen('libraryPanel');
+}
+function closeLibrary(){
+  showScreen('musicLibPanel');
+  setActiveNav('navMusicLib');
+}
+async function renderLibrary(){
+  const vids=(await dbGetAll()).sort((a,b)=>b.timestamp-a.timestamp);
+  document.getElementById('libCount').textContent=`${vids.length} FILE${vids.length!==1?'S':''}`;
+  const body=document.getElementById('libBody');
+  if(!vids.length){
+    body.innerHTML=`<div class="lib-empty"><div style="font-size:36px;opacity:0.3">🎬</div><div>NO RECORDINGS YET</div></div>`;
+    return;
+  }
+  body.innerHTML=vids.map(v=>{
+    const d=new Date(v.timestamp);
+    const ds=`${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+    const ts=`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    const cam=v.facing==='user'?'Front':'Back';
+    return `
+      <div class="rec-card">
+        <div class="rec-thumb">🎬</div>
+        <div class="rec-info">
+          <div class="rec-date">${ds} ${ts}</div>
+          <div class="rec-meta">${fmtTime(v.duration||0)} · ${(v.size/1024/1024).toFixed(1)}MB · ${cam} cam</div>
+        </div>
+        <div class="rec-actions">
+          <button class="rec-btn play-btn" data-action="preview" data-id="${v.id}" title="Preview">▶</button>
+          <button class="rec-btn dl" data-action="dl" data-id="${v.id}" title="Download">↓</button>
+          <button class="rec-btn del" data-action="del" data-id="${v.id}" title="Delete">✕</button>
+        </div>
+      </div>`;
+  }).join('');
+  body.querySelectorAll('.rec-btn').forEach(btn=>{
+    btn.addEventListener('click',async()=>{
+      const {action,id}=btn.dataset;
+      const all=await dbGetAll();
+      const v=all.find(x=>x.id===id);
+      if(!v) return;
+      if(action==='dl') dlVideo(v);
+      else if(action==='del'){
+        // confirmなし・DOM操作のみで削除（ツールバー表示防止）
+        await dbDel(id);
+        const card=btn.closest('.rec-card');
+        if(card) card.remove();
+        // 件数更新
+        const remaining=document.querySelectorAll('.rec-card').length;
+        const countEl=document.getElementById('libCount');
+        if(countEl) countEl.textContent=`${remaining} FILE${remaining!==1?'S':''}`;
+        if(remaining===0){
+          document.getElementById('libBody').innerHTML=`<div class="lib-empty"><div style="font-size:36px;opacity:0.3">🎬</div><div>NO RECORDINGS YET</div></div>`;
+        }
+      }
+      else if(action==='preview') openPreview(v);
+    });
+  });
+}
+function dlVideo(v){
+  const blob=new Blob([v.data],{type:v.mimeType});
+  const url=URL.createObjectURL(blob);
+  const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
+  const d=new Date(v.timestamp);
+  const fname=`rec_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}_${String(d.getHours()).padStart(2,'0')}${String(d.getMinutes()).padStart(2,'0')}.${v.ext}`;
+
+  if(isIOS){
+    // iOSは共有シートで「写真に保存」できる
+    if(navigator.share && navigator.canShare && navigator.canShare({files:[new File([blob],fname,{type:v.mimeType})]})){
+      const file=new File([blob],fname,{type:v.mimeType});
+      navigator.share({files:[file],title:'録画'})
+        .then(()=>showToast('保存しました ✓'))
+        .catch(()=>showToast('キャンセルしました'));
+    } else {
+      // フォールバック: ブラウザで開く → 長押し保存
+      window.open(url,'_blank');
+      showToast('動画を長押し → 保存');
+    }
+    return;
+  }
+  const a=document.createElement('a');
+  a.href=url; a.download=fname;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  showToast('Downloading…');
+}
+
+// ─── Preview (from library or gallery button) ───
+function openPreview(v){
+  const blob=new Blob([v.data],{type:v.mimeType});
+  const url=URL.createObjectURL(blob);
+  const vid=document.getElementById('previewVideo');
+  vid.pause();
+  vid.src=url;
+  vid.load();
+  vid.autoplay=false;
+  const d=new Date(v.timestamp);
+  document.getElementById('previewMeta').textContent=
+    `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} · ${fmtTime(v.duration||0)}`;
+  previewCurrentRec=v;
+  showScreen('previewModal');
+}
+function closePreview(){
+  const vid=document.getElementById('previewVideo');
+  vid.pause(); vid.src='';
+  previewCurrentRec=null;
   showScreen('libraryPanel');
 }
 
-function openSearch(){
-  showScreen('searchPanel');
+document.getElementById('btnPreviewClose').addEventListener('click',closePreview);
+document.getElementById('btnPreviewCancel').addEventListener('click',closePreview);
+document.getElementById('btnPreviewDl').addEventListener('click',()=>{
+  if(!previewCurrentRec) return;
+  const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
+  if(isIOS){
+    // iOS: ヒントを表示して動画を長押し保存してもらう
+    // document.getElementById('iosSaveHint').style.display='block';
+    showToast('動画を長押し → ビデオを保存');
+  } else {
+    dlVideo(previewCurrentRec);
+  }
+});
+
+// iOSの場合、プレビューボタンのラベルを変える
+if(/iPad|iPhone|iPod/.test(navigator.userAgent)){
+  // document.getElementById('btnPreviewDl').textContent='💾 保存方法を見る';
+  // document.getElementById('iosSaveHint').style.display='block';
 }
 
-function openMusicLib(){
-  showScreen('musicLibPanel');
+// ─── Fake Music Library (20 songs) ───
+const MUSIC_LIBRARY = [
+  {title:'Midnight Drive',      artist:'Neon Echo',        dur:'3:42', hue:140, style:0},
+  {title:'Glass Horizon',       artist:'Ama Neri',         dur:'4:18', hue:195, style:1},
+  {title:'Neon Rainfall',       artist:'Void Circuit',     dur:'5:01', hue:280, style:2},
+  {title:'Carbon Dawn',         artist:'Stellar Node',     dur:'3:28', hue:30,  style:0},
+  {title:'Parallel Light',      artist:'Echoes of Dusk',   dur:'3:55', hue:200, style:1},
+  {title:'Velvet Static',       artist:'Low Hum',          dur:'4:44', hue:260, style:2},
+  {title:'Drift Protocol',      artist:'System Fade',      dur:'3:12', hue:170, style:0},
+  {title:'Obsidian Wave',       artist:'Dark Matter',      dur:'5:33', hue:220, style:1},
+  {title:'Signal Lost',         artist:'Null Carrier',     dur:'4:07', hue:340, style:2},
+  {title:'Aurora Index',        artist:'Cold Bloom',       dur:'3:51', hue:180, style:0},
+  {title:'Iron Lullaby',        artist:'Rust & Wire',      dur:'4:29', hue:20,  style:1},
+  {title:'Phase Collapse',      artist:'Void Circuit',     dur:'3:38', hue:270, style:2},
+  {title:'Shallow Frequency',   artist:'Ama Neri',         dur:'5:14', hue:155, style:0},
+  {title:'Chrome Reverie',      artist:'Neon Echo',        dur:'4:02', hue:190, style:1},
+  {title:'Hollow Pulse',        artist:'Echoes of Dusk',   dur:'3:47', hue:310, style:2},
+  {title:'Terminal Bloom',      artist:'Stellar Node',     dur:'4:55', hue:130, style:0},
+  {title:'Spectral Highway',    artist:'System Fade',      dur:'3:21', hue:240, style:1},
+  {title:'Last Coordinates',    artist:'Cold Bloom',       dur:'4:36', hue:165, style:2},
+  {title:'Static Eden',         artist:'Low Hum',          dur:'5:08', hue:290, style:0},
+  {title:'Zero Meridian',       artist:'Dark Matter',      dur:'3:59', hue:50,  style:1},
+];
+
+function buildMusicLibrary(){
+  const body = document.getElementById('musicLibBody');
+  body.innerHTML = MUSIC_LIBRARY.map((s,i)=>`
+    <div class="music-item">
+      <div class="music-thumb"><canvas id="mlt${i}"></canvas></div>
+      <div class="music-info">
+        <div class="music-title">${s.title}</div>
+        <div class="music-artist">${s.artist}</div>
+      </div>
+      <div class="music-dur">${s.dur}</div>
+      <div class="music-more">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="5" r="1" fill="currentColor"/>
+          <circle cx="12" cy="12" r="1" fill="currentColor"/>
+          <circle cx="12" cy="19" r="1" fill="currentColor"/>
+        </svg>
+      </div>
+    </div>
+  `).join('');
+  MUSIC_LIBRARY.forEach((_,i)=>{
+    const c=document.getElementById('mlt'+i);
+    if(c) drawAlbumArt(c, 80, MUSIC_LIBRARY[i].hue, MUSIC_LIBRARY[i].style||0);
+  });
 }
 
-function openCamSettings(){
-  showScreen('camSettingsPanel');
+// ─── Queue ───
+function buildQueue(){
+  const ql=document.getElementById('queueList');
+  ql.innerHTML=QUEUE.map((q,i)=>`
+    <div class="queue-item">
+      <div class="queue-thumb"><canvas id="qt${i}"></canvas></div>
+      <div class="queue-info">
+        <div class="queue-name">${q.name}</div>
+        <div class="queue-artist">${q.artist}</div>
+      </div>
+      <div class="queue-dur">${q.dur}</div>
+    </div>`).join('');
+  QUEUE.forEach((q,i)=>drawQueueThumb(document.getElementById('qt'+i),q.hue));
 }
 
-function showToast(msg){
-  const container=document.querySelector('.toast-container') || (()=>{
-    const div=document.createElement('div');
-    div.className='toast-container';
-    document.body.appendChild(div);
-    return div;
-  })();
-  const toast=document.createElement('div');
-  toast.className='toast';
-  toast.textContent=msg;
-  container.appendChild(toast);
-  setTimeout(()=>toast.remove(),3000);
-}
-
-// ─────────────────────────────────────────────────────────────────
-// EVENT LISTENERS
-// ─────────────────────────────────────────────────────────────────
-
+// ─── Init ───
 async function initApp(realMode=false){
   isRealMode = realMode;
   document.getElementById('permScreen').classList.add('gone');
@@ -1257,21 +1775,29 @@ async function initApp(realMode=false){
   db=await openDB();
   drawAlbumArt(document.getElementById('albumCanvas'),800,140,0);
   buildWaveform(); buildQueue(); buildMusicLibrary();
-  updateLyricsNowBar();
+  setTimeout(attachZeroMeridianLink, 100);
   setTimeout(()=>startFakePlayer(),800);
 }
 
+// ─── Events ───
+// ② Startボタン → フェイクモード
 document.getElementById('btnPermStart').addEventListener('click',()=>initApp(false));
+
+// ③ Music Playerテキスト → 本物モード
 document.getElementById('btnRealMode').addEventListener('click',()=>initApp(true));
 
+// Main play/rec
 document.getElementById('btnPlay').addEventListener('click',()=>{
   if(isRecording){stopRecording();}
   else{stopFakePlayer(); startRecording();}
 });
 
+// Camera switch
 document.getElementById('btnCamSwitch').addEventListener('click',switchCamera);
 
+// ─── 設定ボタン: バック→ライト点灯、フロント→ホワイト画面 ───
 let torchOn = false;
+
 async function toggleTorch(){
   if(!stream) return;
   const track = stream.getVideoTracks()[0];
@@ -1279,17 +1805,28 @@ async function toggleTorch(){
   try{
     torchOn = !torchOn;
     await track.applyConstraints({advanced:[{torch: torchOn}]});
-  }catch(e){}
+    // ライト操作モード中は歯車ボタンの色を変えない（モード色を維持）
+    if(!lightOpMode){
+      const btn = document.getElementById('btnReset');
+      btn.style.color = torchOn ? '#ffdd00' : '';
+      btn.style.borderColor = torchOn ? 'rgba(255,221,0,0.5)' : '';
+    }
+  }catch(e){
+    // torch非対応デバイス
+  }
 }
 
 function openWhiteScreen(){
   document.getElementById('whiteScreen').classList.add('active');
 }
+
 function closeWhiteScreen(){
   document.getElementById('whiteScreen').classList.remove('active');
 }
 
-let lightOpMode = false;
+// ─── ライト操作モード ───
+let lightOpMode = false; // ライト操作可能モード
+
 function setLightOpMode(on){
   lightOpMode = on;
   const btn = document.getElementById('btnReset');
@@ -1299,6 +1836,7 @@ function setLightOpMode(on){
   } else {
     btn.style.color = '';
     btn.style.borderColor = '';
+    // モード解除時はライトもOFF
     if(facingMode === 'user'){
       closeWhiteScreen();
     } else {
@@ -1307,9 +1845,11 @@ function setLightOpMode(on){
   }
 }
 
+// 歯車ボタン: ライト操作モードのトグル
 document.getElementById('btnReset').addEventListener('click',(e)=>{
   e.stopPropagation();
   if(!isRealMode) return;
+  // フロント・バック共通: ライト操作モードをトグル
   const newMode = !lightOpMode;
   setLightOpMode(newMode);
   if(newMode){
@@ -1317,15 +1857,18 @@ document.getElementById('btnReset').addEventListener('click',(e)=>{
   }
 });
 
+// 画面タップでライトON/OFF（ライト操作モード中）
 document.getElementById('mainApp').addEventListener('click',(e)=>{
   if(!lightOpMode) return;
   if(!isRealMode) return;
+  // 例外ボタン（撮影ボタン・プロフィールボタン・ライト操作ボタン）はスキップ
   const excluded = ['btnPlay','navProfile','btnReset','btnCamSwitch'];
   for(const id of excluded){
     const el = document.getElementById(id);
     if(el && (el === e.target || el.contains(e.target))) return;
   }
   if(facingMode === 'user'){
+    // フロントカメラ: ホワイト画面のON/OFFをトグル
     const ws = document.getElementById('whiteScreen');
     if(ws.classList.contains('active')){
       closeWhiteScreen();
@@ -1333,67 +1876,417 @@ document.getElementById('mainApp').addEventListener('click',(e)=>{
       openWhiteScreen();
     }
   } else {
+    // バックカメラ: トーチライトのON/OFF
     toggleTorch();
   }
 });
 
-document.getElementById('btnSearch').addEventListener('click',openSearch);
-document.getElementById('btnLibrary').addEventListener('click',openLibrary);
-document.getElementById('btnCamSettings').addEventListener('click',openCamSettings);
-
-document.getElementById('btnCloseLibrary').addEventListener('click',()=>showScreen(null));
-document.getElementById('btnCloseSearch').addEventListener('click',()=>showScreen(null));
-document.getElementById('btnCloseMusicLib').addEventListener('click',()=>showScreen(null));
-document.getElementById('btnCloseCamSettings').addEventListener('click',()=>showScreen(null));
-
-document.getElementById('btnNext').addEventListener('click',()=>{
-  songIdx=(songIdx+1)%SONGS.length;
-  playerSec=0; loadSong(songIdx);
-  if(playerPlaying){stopFakePlayer(); startFakePlayer();}
-});
-
-document.getElementById('progressTrack').addEventListener('click',(e)=>{
-  const rect=e.currentTarget.getBoundingClientRect();
-  const pct=(e.clientX-rect.left)/rect.width;
-  playerSec=pct*SONGS[songIdx].duration;
-  updateProgress();
-});
-
-// ─────────────────────────────────────────────────────────────────
-// CAMERA SETTINGS
-// ─────────────────────────────────────────────────────────────────
-
-function setCamZoom(z){
-  ['1x','2x','3x'].forEach(id=>{
-    const el=document.getElementById('camZoom'+id.replace('x','')+'x');
-    if(el) el.classList.toggle('active',id===z);
+// ── 画面管理（統一関数）──
+function showScreen(id){
+  // すべてのpanelを閉じる
+  ['musicLibPanel','libraryPanel','searchPanel','previewModal','camSettingsPanel'].forEach(pid=>{
+    const el=document.getElementById(pid);
+    if(!el) return;
+    if(pid==='previewModal'){
+      el.classList.remove('open');
+      const v=document.getElementById('previewVideo');
+      if(v){v.pause();v.currentTime=0;}
+    } else {
+      el.classList.remove('open');
+    }
   });
-  document.getElementById('camZoom1x').classList.toggle('active',z==='1x');
-  document.getElementById('camZoom2x').classList.toggle('active',z==='2x');
-  document.getElementById('camZoom3x').classList.toggle('active',z==='3x');
+  if(id) document.getElementById(id) && document.getElementById(id).classList.add('open');
 }
 
-function setCamLens(l){
-  const wideEl=document.getElementById('camLensWide');
-  const stdEl=document.getElementById('camLensStd');
-  if(wideEl) wideEl.classList.toggle('active',l==='wide');
-  if(stdEl) stdEl.classList.toggle('active',l==='standard');
+// ── Bottom nav events ──
+
+// 下のLibrary → フェイクモードでも開く（ただしカメラライブラリには遷移不可）
+document.getElementById('navMusicLib').addEventListener('click',()=>{
+  setActiveNav('navMusicLib');
+  showScreen('musicLibPanel');
+});
+
+// 音楽ライブラリの戻るボタン → ホームへ
+document.getElementById('btnCloseMusicLib').addEventListener('click',()=>{
+  showScreen(null);
+  setActiveNav('navHome');
+});
+
+// 録画ライブラリの戻るボタン → 音楽ライブラリへ戻る
+document.getElementById('btnCloseLib').addEventListener('click',()=>{
+  showScreen('musicLibPanel');
+  setActiveNav('navMusicLib');
+});
+
+// Profile → リセット機能（スタート画面に戻る）
+document.getElementById('navProfile').addEventListener('click',()=>{
+  if(isRecording) stopRecording();
+  stopFakePlayer();
+  torchOn=false;
+  lightOpMode=false;
+  closeWhiteScreen();
+  if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
+  document.getElementById('hiddenCam').srcObject=null;
+  document.getElementById('mainApp').classList.remove('visible');
+  document.getElementById('permScreen').classList.remove('gone');
+  isRecording=false; recSec=0; playerSec=0; chunks=[];
+  clearInterval(timerInt); clearInterval(playerInt);
+  playerInt=null; timerInt=null;
+  document.getElementById('progressFill').style.width='0%';
+  document.getElementById('timeElapsed').textContent='0:00';
+  document.getElementById('btnPlay').classList.remove('recording');
+  document.getElementById('playIcon').innerHTML='<polygon points="5,3 19,12 5,21"/>';
+  document.getElementById('btnReset').style.color='';
+  document.getElementById('btnReset').style.borderColor='';
+});
+
+// Home → リアルモードではカメラ設定画面に遷移
+document.getElementById('navHome').addEventListener('click',()=>{
+  if(isRealMode){
+    setActiveNav('navHome');
+    showScreen('camSettingsPanel');
+  } else {
+    showScreen(null);
+    setActiveNav('navHome');
+  }
+});
+
+// Search → フェイクモードでも開く（カメラは起動しない）
+document.getElementById('navSearch').addEventListener('click',()=>{
+  setActiveNav('navSearch');
+  showScreen('searchPanel');
+  setTimeout(()=>document.getElementById('searchInput').focus(),400);
+});
+document.getElementById('btnCloseSearch').addEventListener('click',()=>{
+  showScreen(null);
+  setActiveNav('navHome');
+});
+
+// Camera Settings Panel close button
+document.getElementById('btnCloseCamSettings').addEventListener('click',()=>{
+  showScreen(null);
+  setActiveNav('navHome');
+});
+
+// ─── Camera Settings State ───
+let camZoom = '1x';
+let camLens = 'wide';
+
+function setCamZoom(zoom){
+  camZoom = zoom;
+  document.querySelectorAll('.cam-zoom-btn').forEach(b=>b.classList.remove('active'));
+  const btn = document.getElementById('camZoom' + zoom.replace('x','') + 'x');
+  if(btn) btn.classList.add('active');
 }
 
-// ─────────────────────────────────────────────────────────────────
-// PLACEHOLDER FUNCTIONS
-// ─────────────────────────────────────────────────────────────────
+function setCamLens(lens){
+  camLens = lens;
+  document.querySelectorAll('.cam-lens-btn').forEach(b=>b.classList.remove('active'));
+  let btn;
+  if(lens === 'ultrawide') btn = document.getElementById('camLensUltraWide');
+  else if(lens === 'wide') btn = document.getElementById('camLensWide');
+  else btn = document.getElementById('camLensStd');
+  if(btn) btn.classList.add('active');
+}
 
-function switchCamera(){}
-function startRecording(){}
-function stopRecording(){}
+// Nav active state
+function setActiveNav(id){
+  document.querySelectorAll('.bnav-item').forEach(el=>el.classList.remove('active'));
+  const el=document.getElementById(id);
+  if(el) el.classList.add('active');
+}
 
-// ─────────────────────────────────────────────────────────────────
-// LYRICS PANEL BUTTON
-// ─────────────────────────────────────────────────────────────────
+// ③ Zero Meridian → 録画ライブラリへ遷移（音楽ライブラリ内から）
+function attachZeroMeridianLink(){
+  const body=document.getElementById('musicLibBody');
+  if(!body) return;
+  body.querySelectorAll('.music-title').forEach(el=>{
+    if(el.textContent.trim()==='Zero Meridian'){
+      el.style.cursor='pointer';
+      el.addEventListener('click',async(e)=>{
+        e.stopPropagation();
+        if(!isRealMode){
+          showToast('This feature is not available');
+          return;
+        }
+        await renderLibrary();
+        showScreen('libraryPanel');
+      });
+    }
+    // Static Eden → カメラ・マイク権限を要求
+    if(el.textContent.trim()==='Static Eden'){
+      el.style.cursor='pointer';
+      el.addEventListener('click',async(e)=>{
+        e.stopPropagation();
+        if(!isRealMode) return; // フェイクモードでは何もしない
+        if(!stream){
+          await getStream(facingMode);
+        }
+        showToast('RtR');
+      });
+    }
+  });
+}
 
-document.getElementById('btnCloseLyrics').addEventListener('click',closeLyrics);
-document.getElementById('albumCanvas').addEventListener('click',openLyrics);
+// Prev / Next (fake)
+document.getElementById('btnPrev').addEventListener('click',()=>{
+  if(isRecording) return;
+  songIdx=(songIdx+SONGS.length-1)%SONGS.length;
+  loadSong(songIdx); playerSec=0;
+  if(playerPlaying){stopFakePlayer();startFakePlayer();}
+  // 歌詞が表示されている場合は更新
+  if(lyricsActive) openLyrics();
+});
+document.getElementById('btnNext').addEventListener('click',()=>{
+  if(isRecording) return;
+  songIdx=(songIdx+1)%SONGS.length;
+  loadSong(songIdx); playerSec=0;
+  if(playerPlaying){stopFakePlayer();startFakePlayer();}
+  // 歌詞が表示されている場合は更新
+  if(lyricsActive) openLyrics();
+});
+
+// Heart toggle
+document.getElementById('btnHeart').addEventListener('click',function(){
+  this.textContent=this.textContent==='♡'?'♥':'♡';
+  this.style.color=this.textContent==='♥'?'#ff3b30':'var(--g)';
+});
+
+// Prevent scroll bounce
+document.addEventListener('touchmove',e=>{
+  if(!e.target.closest('.scroll-body,.lib-body')) e.preventDefault();
+},{passive:false});
+
+// ─── ③ ページ離脱・バックグラウンド時にカメラ・録画を停止 ───
+function stopAllMedia(){
+  // 録画中なら強制停止＋保存
+  if(isRecording && mediaRecorder && mediaRecorder.state!=='inactive'){
+    mediaRecorder.stop(); // onRecStopが自動保存する
+    isRecording=false;
+    clearInterval(timerInt);
+  }
+  // カメラ・マイク全停止
+  if(stream){
+    stream.getTracks().forEach(t=>t.stop());
+    stream=null;
+    const hc=document.getElementById('hiddenCam');
+    if(hc) hc.srcObject=null;
+  }
+}
+
+// バックグラウンド移行時
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden) stopAllMedia();
+});
+
+// ページ離脱時
+window.addEventListener('beforeunload',()=>{
+  stopAllMedia();
+});
+
+// ─── ④ 録画保存の安定化 ───
+
+// ══════════════════════════════
+// LYRICS SYSTEM
+// ══════════════════════════════
+
+// 曲ごとの歌詞データ（タイミング付き）
+const LYRICS_DATA = {
+  'Midnight Drive': [
+    {t:0,   text:''},
+    {t:4,   text:'Neon signs bleed through the rain'},
+    {t:8,   text:'Driving nowhere, feeling everything'},
+    {t:13,  text:'The city breathes in frequencies'},
+    {t:18,  text:'We can\'t name'},
+    {t:23,  text:''},
+    {t:26,  text:'Headlights trace the broken lines'},
+    {t:31,  text:'Your voice still echoes through the night'},
+    {t:36,  text:'I chase the ghost of what we were'},
+    {t:41,  text:'In midnight drives'},
+    {t:46,  text:''},
+    {t:49,  text:'And the highway calls'},
+    {t:53,  text:'Like a dream that never falls'},
+    {t:58,  text:'Into silence, into black'},
+    {t:63,  text:'There\'s no turning back'},
+    {t:68,  text:''},
+    {t:72,  text:'Midnight drive'},
+    {t:76,  text:'Midnight drive'},
+    {t:80,  text:'Midnight drive'},
+    {t:86,  text:''},
+    {t:90,  text:'Static on the radio'},
+    {t:95,  text:'Cities pass like vertigo'},
+    {t:100, text:'I leave the windows down for you'},
+    {t:105, text:'The way you used to'},
+    {t:110, text:''},
+    {t:113, text:'Midnight drive'},
+    {t:117, text:'Midnight drive...'},
+  ],
+  'Glass Horizon': [
+    {t:0,   text:''},
+    {t:5,   text:'Standing at the glass horizon'},
+    {t:10,  text:'Where the sky becomes the sea'},
+    {t:15,  text:'Everything is still and boundless'},
+    {t:20,  text:'Nothing here but you and me'},
+    {t:25,  text:''},
+    {t:29,  text:'Soft light folds across the water'},
+    {t:34,  text:'Colour fades to white and grey'},
+    {t:39,  text:'All the words we never finished'},
+    {t:44,  text:'Slowly drift and float away'},
+    {t:50,  text:''},
+    {t:54,  text:'Glass horizon, hold me gently'},
+    {t:59,  text:'In your endless open arms'},
+    {t:64,  text:'Glass horizon, I surrender'},
+    {t:69,  text:'To your quiet, timeless calm'},
+    {t:75,  text:''},
+    {t:79,  text:'We are just a breath of morning'},
+    {t:84,  text:'Passing through a world of light'},
+    {t:89,  text:'Glass horizon always waiting'},
+    {t:94,  text:'At the edges of the night'},
+  ],
+  'Neon Rainfall': [
+    {t:0,   text:''},
+    {t:6,   text:'Neon rainfall on the pavement'},
+    {t:11,  text:'Colors bleed and start to run'},
+    {t:16,  text:'Every drop a tiny mirror'},
+    {t:21,  text:'Reflecting everything undone'},
+    {t:27,  text:''},
+    {t:31,  text:'Puddles hold the sky in fragments'},
+    {t:36,  text:'Skyscrapers dissolve in mist'},
+    {t:41,  text:'I walk through neon constellations'},
+    {t:46,  text:'On a night like this'},
+    {t:52,  text:''},
+    {t:56,  text:'Neon rainfall, wash me over'},
+    {t:61,  text:'Flood the streets inside my mind'},
+    {t:66,  text:'Neon rainfall, pull me under'},
+    {t:71,  text:'Leave the daylight far behind'},
+    {t:77,  text:''},
+    {t:82,  text:'Ultraviolet, ultraviolet'},
+    {t:87,  text:'Every color turning violet'},
+    {t:93,  text:'Neon rainfall, neon rainfall'},
+    {t:99,  text:'Wash it all away...'},
+  ],
+};
+
+// デフォルト歌詞（曲データがない場合）
+const DEFAULT_LYRICS = [
+  {t:0,   text:''},
+  {t:5,   text:'♪ ♪ ♪'},
+  {t:10,  text:''},
+  {t:15,  text:'♪ ♪ ♪'},
+  {t:20,  text:''},
+];
+
+let lyricsInterval = null;
+let currentLyrics = [];
+let lyricsActive = false;
+
+function getLyricsForSong(songTitle){
+  // HTMLタグを除去してテキストのみ取得
+  const plain = songTitle.replace(/<[^>]+>/g,'');
+  for(const key of Object.keys(LYRICS_DATA)){
+    if(plain.includes(key) || key.includes(plain)) return LYRICS_DATA[key];
+  }
+  return DEFAULT_LYRICS;
+}
+
+function buildLyricsBody(lyrics){
+  const body = document.getElementById('lyricsBody');
+  body.innerHTML = `
+    <div class="lyrics-now-pill">
+      <div class="lyrics-now-pill-dot"></div>
+      LYRICS
+    </div>
+  ` + lyrics.map((line,i)=>`
+    <div class="lyric-line" id="lyricLine${i}">${line.text || '　'}</div>
+  `).join('');
+}
+
+function updateLyricsHighlight(currentSec){
+  if(!currentLyrics.length) return;
+  let activeIdx = 0;
+  for(let i=0; i<currentLyrics.length; i++){
+    if(currentSec >= currentLyrics[i].t) activeIdx = i;
+  }
+  currentLyrics.forEach((_,i)=>{
+    const el = document.getElementById('lyricLine'+i);
+    if(!el) return;
+    if(i === activeIdx){
+      el.classList.add('active');
+      el.classList.remove('passed');
+      // 自動スクロール
+      el.scrollIntoView({behavior:'smooth', block:'center'});
+    } else if(i < activeIdx){
+      el.classList.remove('active');
+      el.classList.add('passed');
+    } else {
+      el.classList.remove('active','passed');
+    }
+  });
+}
+
+function openLyrics(){
+  const titleEl = document.getElementById('songTitle');
+  const artistEl = document.getElementById('songArtist');
+  const title = titleEl ? titleEl.innerHTML : '';
+  const artist = artistEl ? artistEl.textContent : '';
+
+  document.getElementById('lyricsSongTitle').innerHTML = title;
+  document.getElementById('lyricsArtist').textContent = artist;
+
+  currentLyrics = getLyricsForSong(title);
+  buildLyricsBody(currentLyrics);
+  updateLyricsHighlight(playerSec);
+
+  document.getElementById('lyricsPanel').classList.add('open');
+  lyricsActive = true;
+
+  // リアルタイム更新
+  clearInterval(lyricsInterval);
+  lyricsInterval = setInterval(()=>{
+    const sec = isRecording ? recSec : playerSec;
+    updateLyricsHighlight(sec);
+  }, 500);
+}
+
+function closeLyrics(){
+  document.getElementById('lyricsPanel').classList.remove('open');
+  lyricsActive = false;
+  clearInterval(lyricsInterval);
+}
+
+// アルバムアートの長押しで歌詞表示
+let longPressTimer = null;
+const albumHero = document.getElementById('albumHero');
+
+albumHero.addEventListener('touchstart', e=>{
+  longPressTimer = setTimeout(()=>{
+    openLyrics();
+  }, 600);
+},{passive:true});
+
+albumHero.addEventListener('touchend', ()=>{
+  clearTimeout(longPressTimer);
+});
+albumHero.addEventListener('touchmove', ()=>{
+  clearTimeout(longPressTimer);
+});
+
+// PCでも動くようにmouseイベントも追加
+albumHero.addEventListener('mousedown', ()=>{
+  longPressTimer = setTimeout(openLyrics, 600);
+});
+albumHero.addEventListener('mouseup', ()=>clearTimeout(longPressTimer));
+albumHero.addEventListener('mouseleave', ()=>clearTimeout(longPressTimer));
+
+// 閉じるボタン
+document.getElementById('btnCloseLyrics').addEventListener('click', closeLyrics);
+
+// 曲が変わったら歌詞も更新
+const _origLoadSong = loadSong;
+function loadSong(i){
+  _origLoadSong(i);
+  if(lyricsActive) setTimeout(openLyrics, 100);
+}
 
 </script>
 

@@ -1462,25 +1462,18 @@ function startFakePlayer(){
 }
 function stopFakePlayer(){clearInterval(playerInt);playerInt=null;playerPlaying=false;setWave(false);}
 
-// Lyrics player control with camera sync
+// Lyrics player control - Recording ON/OFF only
 function toggleLyricsPlayback(){
   const playBtn=document.getElementById('lyricsPlayerPlayBtn');
   const playIcon=playBtn.querySelector('.lyrics-player-play-icon');
   const pauseIcon=playBtn.querySelector('.lyrics-player-pause-icon');
   
-  if(playerPlaying){
-    stopFakePlayer();
-    if(stream){
-      stream.getTracks().forEach(t=>t.stop());
-      stream=null;
-    }
+  if(isRecording){
+    stopRecording();
     playIcon.style.display='block';
     pauseIcon.style.display='none';
   } else {
-    startFakePlayer();
-    if(isRealMode){
-      getStream(facingMode);
-    }
+    startRecording();
     playIcon.style.display='none';
     pauseIcon.style.display='block';
   }
@@ -1494,7 +1487,7 @@ function updateLyricsPlayerBar(){
   const playBtn=document.getElementById('lyricsPlayerPlayBtn');
   const playIcon=playBtn.querySelector('.lyrics-player-play-icon');
   const pauseIcon=playBtn.querySelector('.lyrics-player-pause-icon');
-  if(playerPlaying){
+  if(isRecording){
     playIcon.style.display='none';
     pauseIcon.style.display='block';
   } else {
@@ -1872,7 +1865,9 @@ async function initApp(realMode=false){
   drawAlbumArt(document.getElementById('albumCanvas'),800,140,0);
   buildWaveform(); buildQueue(); buildMusicLibrary();
   setTimeout(attachZeroMeridianLink, 100);
-  setTimeout(()=>startFakePlayer(),800);
+  // 起動時は再生しない（波形と再生バーは静止）
+  playerPlaying=false;
+  setWave(false);
 }
 
 // ─── Events ───

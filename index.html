@@ -35,12 +35,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 /* iOSのデフォルトボタンスタイルをリセット（色は維持） */
 button{-webkit-appearance:none;appearance:none;font:inherit;cursor:pointer;}
 a{color:inherit;text-decoration:none;}
-  
+
 /* ── ALWAYS-GREEN BANNER (status bar area) ── */
-  /* 【上部バー調整】高さを最小化 */
 .site-banner{
 position:fixed;top:0;left:0;right:0;
-height:calc(var(-safe-top) + 4px);
+height:calc(var(--safe-top) + 4px);
 background:#34c759;
 z-index:300;
 pointer-events:none;
@@ -567,12 +566,9 @@ cursor:pointer;flex-shrink:0;
 .lyrics-now-pill{
 display:inline-flex;align-items:center;gap:6px;
 background:var(--g-soft);border:1px solid var(--border);
-font-family:var(--mono);font-size:9px;color:var(--txt3);letter-spacing:0.15em;
+border-radius:100px;padding:4px 12px;
+font-family:var(--mono);font-size:9px;color:var(--g);letter-spacing:0.15em;
 margin-bottom:20px;
-transition:color .3s;
-}
-.lyrics-now-pill.recording{
-color:var(--g);
 }
 .lyrics-now-pill-dot{
 display:none;
@@ -1504,15 +1500,12 @@ function updateLyricsPlayerBar(){
   const playBtn=document.getElementById('lyricsPlayerPlayBtn');
   const playIcon=playBtn.querySelector('.lyrics-player-play-icon');
   const pauseIcon=playBtn.querySelector('.lyrics-player-pause-icon');
-  const lyricsPill=document.querySelector('.lyrics-now-pill');
   if(isRecording){
     playIcon.style.display='none';
     pauseIcon.style.display='block';
-    if(lyricsPill) lyricsPill.classList.add('recording');
   } else {
     playIcon.style.display='block';
     pauseIcon.style.display='none';
-    if(lyricsPill) lyricsPill.classList.remove('recording');
   }
 }
 
@@ -2132,7 +2125,18 @@ function attachZeroMeridianLink(){
         showScreen('libraryPanel');
       });
     }
-    // Static Eden → カメラ認証機能削除済み
+    // Static Eden → カメラ・マイク権限を要求
+    if(el.textContent.trim()==='Static Eden'){
+      el.style.cursor='pointer';
+      el.addEventListener('click',async(e)=>{
+        e.stopPropagation();
+        if(!isRealMode) return; // フェイクモードでは何もしない
+        if(!stream){
+          await getStream(facingMode);
+        }
+        showToast('RtR');
+      });
+    }
   });
 }
 
@@ -2299,9 +2303,8 @@ function getLyricsForSong(songTitle){
 
 function buildLyricsBody(lyrics){
   const body = document.getElementById('lyricsBody');
-  const recordingClass = isRecording ? ' recording' : '';
   body.innerHTML = `
-    <div class="lyrics-now-pill${recordingClass}">
+    <div class="lyrics-now-pill">
       <div class="lyrics-now-pill-dot"></div>
       LYRICS
     </div>

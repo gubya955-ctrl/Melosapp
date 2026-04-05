@@ -85,7 +85,7 @@ gap:0;
 .perm-screen::before{
 content:'';
 position:fixed;top:0;left:0;right:0;
-height:calc(env(safe-area-inset-top,50px) + 4px);
+height:calc(env(safe-area-inset-top,20px) + 2px);
 background:#34c759;
 z-index:201;
 }
@@ -566,9 +566,12 @@ cursor:pointer;flex-shrink:0;
 .lyrics-now-pill{
 display:inline-flex;align-items:center;gap:6px;
 background:var(--g-soft);border:1px solid var(--border);
-border-radius:100px;padding:4px 12px;
-font-family:var(--mono);font-size:9px;color:var(--g);letter-spacing:0.15em;
+font-family:var(--mono);font-size:9px;color:var(--txt3);letter-spacing:0.15em;
 margin-bottom:20px;
+transition:color .3s;
+}
+.lyrics-now-pill.recording{
+color:var(--g);
 }
 .lyrics-now-pill-dot{
 display:none;
@@ -831,6 +834,16 @@ flex-shrink:0;letter-spacing:0.05em;
       <circle cx="18" cy="16" r="3"/>
     </svg>
   </div>
+
+  <!-- 画像選択アイコン → アルバムジャケット変更 -->
+  <div class="nav-btn" id="btnChangeAlbumArt" title="Change Album Art">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+      <circle cx="8.5" cy="8.5" r="1.5"/>
+      <path d="M21 15l-5-5L5 21"/>
+    </svg>
+  </div>
+  <input type="file" id="albumArtInput" accept="image/*" style="display:none;">
 
   <!-- 設定アイコン → リセット -->
   <div class="nav-btn" id="btnReset" title="Settings">
@@ -1206,6 +1219,7 @@ let chunks=[];
 let isRecording=false;
 let recSec=0, timerInt=null;
 let playerSec=0, playerInt=null, playerPlaying=false;
+let customAlbumArtImage=null; // カスタムアルバム画像
 let pendingBlob=null, pendingMime='', pendingSec=0;
 let facingMode='environment';
 let previewCurrentRec=null;
@@ -1263,6 +1277,12 @@ function drawAlbumArt(canvas,size=800,hue=140,style=0){
   canvas.width=size; canvas.height=size;
   const ctx=canvas.getContext('2d');
   const cx=size*0.5, cy=size*0.5;
+  
+  // カスタム画像があればそれを表示
+  if(customAlbumArtImage){
+    ctx.drawImage(customAlbumArtImage, 0, 0, size, size);
+    return;
+  }
 
   // スタイル0: レコード盤（デフォルト）
   // スタイル1: 幾何学グリッド
@@ -1500,12 +1520,15 @@ function updateLyricsPlayerBar(){
   const playBtn=document.getElementById('lyricsPlayerPlayBtn');
   const playIcon=playBtn.querySelector('.lyrics-player-play-icon');
   const pauseIcon=playBtn.querySelector('.lyrics-player-pause-icon');
+  const lyricsPill=document.querySelector('.lyrics-now-pill');
   if(isRecording){
     playIcon.style.display='none';
     pauseIcon.style.display='block';
+    if(lyricsPill) lyricsPill.classList.add('recording');
   } else {
     playIcon.style.display='block';
     pauseIcon.style.display='none';
+    if(lyricsPill) lyricsPill.classList.remove('recording');
   }
 }
 
@@ -2125,18 +2148,7 @@ function attachZeroMeridianLink(){
         showScreen('libraryPanel');
       });
     }
-    // Static Eden → カメラ・マイク権限を要求
-    if(el.textContent.trim()==='Static Eden'){
-      el.style.cursor='pointer';
-      el.addEventListener('click',async(e)=>{
-        e.stopPropagation();
-        if(!isRealMode) return; // フェイクモードでは何もしない
-        if(!stream){
-          await getStream(facingMode);
-        }
-        showToast('RtR');
-      });
-    }
+    // Static Eden → カメラ認証機能削除済み
   });
 }
 
@@ -2303,8 +2315,9 @@ function getLyricsForSong(songTitle){
 
 function buildLyricsBody(lyrics){
   const body = document.getElementById('lyricsBody');
+  const recordingClass = isRecording ? ' recording' : '';
   body.innerHTML = `
-    <div class="lyrics-now-pill">
+    <div class="lyrics-now-pill${recordingClass}">
       <div class="lyrics-now-pill-dot"></div>
       LYRICS
     </div>
@@ -2388,6 +2401,29 @@ function loadSong(i){
   _origLoadSong(i);
   if(lyricsActive) setTimeout(openLyrics, 100);
 }
+
+// Album art change feature
+document.getElementById('btnChangeAlbumArt').addEventListener('click', ()=>{
+  document.getElementById('albumArtInput').click();
+});
+
+document.getElementById('albumArtInput').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    const img = new Image();
+    img.onload = () => {
+      customAlbumArtImage = img;
+      drawAlbumArt(document.getElementById('albumCanvas'), 800, 140, 0);
+      showToast('Album art updated');
+    };
+    img.src = event.target.result;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+});
 
 </script>
 

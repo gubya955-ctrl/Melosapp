@@ -182,9 +182,8 @@ box-shadow:0 20px 60px rgba(0,0,0,0.5),0 0 0 1px var(--border);
 .album-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.6) 0%,transparent 50%)}
 .album-badge{
 position:absolute;bottom:14px;left:14px;
-background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);
-border:1px solid var(--border);border-radius:100px;padding:6px 14px;
-font-family:var(--mono);font-size:10px;letter-spacing:0.15em;color:var(--txt3);
+background:transparent;border:none;padding:0;
+font-family:var(--mono);font-size:10px;letter-spacing:0.15em;color:transparent;
 display:flex;align-items:center;gap:6px;transition:all .3s;
 }
 .album-badge.recording{
@@ -521,9 +520,7 @@ font-family:var(--serif);font-size:16px;
 color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 transition:color .3s;
 }
-.lyrics-header-title.recording{
-color:var(--g);
-}
+
 .lyrics-header-artist{
 font-size:11px;color:var(--txt2);margin-top:2px;
 }
@@ -859,7 +856,7 @@ cursor:pointer;transition:all .2s;
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" width="48" height="48" style="color:var(--g);opacity:0.8;margin-bottom:12px">
         <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
       </svg>
-      <div style="font-family:var(--serif);font-size:28px;color:var(--g);letter-spacing:-0.01em;font-weight:300;">Melos</div>
+      <div id="btnOpenEditor" style="font-family:var(--serif);font-size:28px;color:var(--g);letter-spacing:-0.01em;font-weight:300;cursor:pointer;transition:opacity .2s;-webkit-tap-highlight-color:transparent;">Melos</div>
       <div id="btnRealMode" style="margin-top:16px;font-family:var(--mono);font-size:10px;color:var(--txt3);letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;transition:color .2s;-webkit-tap-highlight-color:transparent;">Music Prayer</div>
     </div>
   <!-- Start ボタン（フェイクモード） -->
@@ -1246,25 +1243,7 @@ cursor:pointer;transition:all .2s;
       <div class="editor-image-preview" id="editorImagePreview"></div>
       <button class="editor-btn" id="btnEditorChangeImage">Change Image</button>
     </div>
-    <!-- Title input -->
-    <div class="editor-section">
-      <div class="editor-label">Title</div>
-      <input type="text" id="editorTitle" class="editor-input" placeholder="Song title">
-    </div>
-    <!-- Artist input -->
-    <div class="editor-section">
-      <div class="editor-label">Artist</div>
-      <input type="text" id="editorArtist" class="editor-input" placeholder="Artist name">
-    </div>
-    <!-- Lyrics section -->
-    <div class="editor-section">
-      <div class="editor-label">Lyrics</div>
-      <div class="editor-lyrics-toggle">
-        <button class="toggle-btn active" id="btnLyricsDefault">Default</button>
-        <button class="toggle-btn" id="btnLyricsCustom">Custom</button>
-      </div>
-      <textarea id="editorLyrics" class="editor-textarea" placeholder="Enter custom lyrics..."></textarea>
-    </div>
+
     <!-- Save button -->
     <button class="editor-save-btn" id="btnSaveEditor">Save Changes</button>
   </div>
@@ -1334,10 +1313,6 @@ let isRecording=false;
 let recSec=0, timerInt=null;
 let playerSec=0, playerInt=null, playerPlaying=false;
 let customAlbumArtImage=null; // カスタムアルバム画像
-let customSongTitle=null; // カスタム曲タイトル
-let customArtistName=null; // カスタムアーティスト名
-let customLyrics=null; // カスタム歌詞
-let usingCustomLyrics=false; // カスタム歌詞使用フラグ
 let pendingBlob=null, pendingMime='', pendingSec=0;
 let facingMode='environment';
 let previewCurrentRec=null;
@@ -1652,9 +1627,8 @@ function updateLyricsPlayerBar(){
 
 function loadSong(i){
   const s=SONGS[i];
-  // カスタム情報があればそれを使用
-  document.getElementById('songTitle').innerHTML=customSongTitle || s.title;
-  document.getElementById('songArtist').textContent=customArtistName || s.artist;
+  document.getElementById('songTitle').innerHTML=s.title;
+  document.getElementById('songArtist').textContent=s.artist;
   document.getElementById('timeDuration').textContent=s.dur;
   playerSec=0;
   const hues=[140,195,280];
@@ -2424,10 +2398,6 @@ let currentLyrics = [];
 let lyricsActive = false;
 
 function getLyricsForSong(songTitle){
-  // カスタム歌詞を使用している場合
-  if(usingCustomLyrics && customLyrics){
-    return customLyrics.split('\n').map((line, idx) => ({t: idx*5, text: line}));
-  }
   // HTMLタグを除去してテキストのみ取得
   const plain = songTitle.replace(/<[^>]+>/g,'');
   for(const key of Object.keys(LYRICS_DATA)){
@@ -2442,9 +2412,8 @@ function buildLyricsBody(lyrics){
   body.innerHTML = `
     <div class="lyrics-now-pill${recordingClass}">
       <div class="lyrics-now-pill-dot"></div>
-      LYRICS
     </div>
-  ` + lyrics.map((line,i)=>`
+  ` + lyrics.map((line,i)=>` 
     <div class="lyric-line" id="lyricLine${i}">${line.text || '　'}</div>
   `).join('');
 }
@@ -2569,20 +2538,10 @@ editorImageInput.type = 'file';
 editorImageInput.accept = 'image/*';
 
 // Open editor
-document.getElementById('btnChangeAlbumArt').addEventListener('click', ()=>{
+document.getElementById('btnOpenEditor').addEventListener('click', ()=>{
   albumEditorPanel.classList.add('open');
-  editorTitle.value = customSongTitle || SONGS[songIdx].title.replace(/<[^>]+>/g,'');
-  editorArtist.value = customArtistName || SONGS[songIdx].artist;
-  editorLyrics.value = customLyrics || '';
   if(customAlbumArtImage){
     editorImagePreview.style.backgroundImage = `url(${customAlbumArtImage.src})`;
-  }
-  if(usingCustomLyrics){
-    btnLyricsDefault.classList.remove('active');
-    btnLyricsCustom.classList.add('active');
-  } else {
-    btnLyricsDefault.classList.add('active');
-    btnLyricsCustom.classList.remove('active');
   }
 });
 
@@ -2591,20 +2550,7 @@ btnCloseEditor.addEventListener('click', ()=>{
   albumEditorPanel.classList.remove('open');
 });
 
-// Lyrics toggle
-btnLyricsDefault.addEventListener('click', ()=>{
-  usingCustomLyrics = false;
-  btnLyricsDefault.classList.add('active');
-  btnLyricsCustom.classList.remove('active');
-  editorLyrics.disabled = true;
-});
 
-btnLyricsCustom.addEventListener('click', ()=>{
-  usingCustomLyrics = true;
-  btnLyricsDefault.classList.remove('active');
-  btnLyricsCustom.classList.add('active');
-  editorLyrics.disabled = false;
-});
 
 // Change image button
 btnEditorChangeImage.addEventListener('click', ()=>{
@@ -2628,11 +2574,6 @@ editorImageInput.addEventListener('change', (e)=>{
 
 // Save editor
 btnSaveEditor.addEventListener('click', ()=>{
-  customSongTitle = editorTitle.value || null;
-  customArtistName = editorArtist.value || null;
-  customLyrics = editorLyrics.value || null;
-  loadSong(songIdx);
-  if(lyricsActive) openLyrics();
   albumEditorPanel.classList.remove('open');
-  showToast('Changes saved');
+  showToast('Album art updated');
 });
